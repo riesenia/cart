@@ -1,6 +1,8 @@
 <?php
 namespace Riesenia\Cart;
 
+use Litipk\BigNumbers\Decimal;
+
 class Cart
 {
     /**
@@ -47,9 +49,51 @@ class Cart
      */
     public function __construct($context = null, $pricesWithVat = true, $roundingDecimals = 2)
     {
+        $this->setContext($context);
+        $this->setPricesWithVat($pricesWithVat);
+        $this->setRoundingDecimals($roundingDecimals);
+    }
+
+    /**
+     * Set context
+     *
+     * @param mixed context data (passed to cart items for custom price logic)
+     * @return void
+     */
+    public function setContext($context)
+    {
         $this->_context = $context;
-        $this->_pricesWithVat = $pricesWithVat;
+        $this->_totals = null;
+    }
+
+    /**
+     * Set prices with VAT
+     *
+     * @param bool true if prices are listed as gross
+     * @return void
+     */
+    public function setPricesWithVat($pricesWithVat)
+    {
+        $this->_pricesWithVat = (bool)$pricesWithVat;
+        $this->_totals = null;
+    }
+
+    /**
+     * Set rounding decimals
+     *
+     * @param bool true if prices are listed as gross
+     * @return void
+     */
+    public function setRoundingDecimals($roundingDecimals)
+    {
+        $roundingDecimals = (int)$roundingDecimals;
+
+        if ($roundingDecimals < 0) {
+            throw new \RangeException('Invalid value for rounding decimals.');
+        }
+
         $this->_roundingDecimals = $roundingDecimals;
+        $this->_totals = null;
     }
 
     /**
@@ -105,7 +149,7 @@ class Cart
     /**
      * Get subtotal
      *
-     * @return float
+     * @return \Litipk\BigNumbers\Decimal
      */
     public function getSubtotal()
     {
@@ -114,6 +158,34 @@ class Cart
         }
 
         return $this->_totals['subtotal'];
+    }
+
+    /**
+     * Get total
+     *
+     * @return \Litipk\BigNumbers\Decimal
+     */
+    public function getTotal()
+    {
+        if (is_null($this->_totals)) {
+            $this->_calculate();
+        }
+
+        return $this->_totals['total'];
+    }
+
+    /**
+     * Get taxes
+     *
+     * @return array
+     */
+    public function getTaxes()
+    {
+        if (is_null($this->_totals)) {
+            $this->_calculate();
+        }
+
+        return $this->_totals['taxes'];
     }
 
     /**
@@ -126,35 +198,35 @@ class Cart
         $totals = [];
 
         foreach ($this->_items as $item) {
-            $price = $item->getUnitPrice();
+            $price = Decimal::create($item->getUnitPrice());
 
             // when listed as gross
             if ($this->_pricesWithVat) {
-                $price *= 1 + $item->getTaxRate() / 100;
+                $price = $price->mul(Decimal::fromFloat(1 + $item->getTaxRate() / 100));
             }
 
             // count price
-            $price = round($price * $item->getCartQuantity(), $this->_roundingDecimals);
+            $price = $price->mul(Decimal::fromInteger($item->getCartQuantity()))->round($this->_roundingDecimals);
 
             if (!isset($totals[$item->getTaxRate()])) {
-                $totals[$item->getTaxRate()] = 0;
+                $totals[$item->getTaxRate()] = Decimal::fromInteger(0);
             }
 
-            $totals[$item->getTaxRate()] += $price;
+            $totals[$item->getTaxRate()] = $totals[$item->getTaxRate()]->add($price);
         }
 
-        $this->_totals = ['subtotal' => 0, 'taxes' => [], 'total' => 0];
-
-        $this->_totals[$this->_pricesWithVat ? 'total' : 'subtotal'] = array_sum($totals);
+        $this->_totals = ['subtotal' => Decimal::fromInteger(0), 'taxes' => [], 'total' => Decimal::fromInteger(0)];
 
         foreach ($totals as $taxRate => $amount) {
-            $this->_totals['taxes'][$taxRate] = round($this->_pricesWithVat ? $amount * (1 - 1 / (1 + $taxRate / 100)) : $amount * $taxRate / 100, $this->_roundingDecimals);
-        }
-
-        if ($this->_pricesWithVat) {
-            $this->_totals['subtotal'] = $this->_totals['total'] - array_sum($this->_totals['taxes']);
-        } else {
-            $this->_totals['total'] = $this->_totals['subtotal'] + array_sum($this->_totals['taxes']);
+            if ($this->_pricesWithVat) {
+                $this->_totals['total'] = $this->_totals['total']->add($amount);
+                $this->_totals['taxes'][$taxRate] = $amount->mul(Decimal::fromFloat(1 - 1 / (1 + $taxRate / 100)))->round($this->_roundingDecimals);
+                $this->_totals['subtotal'] = $this->_totals['subtotal']->add($amount)->sub($this->_totals['taxes'][$taxRate]);
+            } else {
+                $this->_totals['subtotal'] = $this->_totals['subtotal']->add($amount);
+                $this->_totals['taxes'][$taxRate] = $amount->mul(Decimal::fromFloat($taxRate / 100))->round($this->_roundingDecimals);
+                $this->_totals['total'] = $this->_totals['total']->add($amount)->add($this->_totals['taxes'][$taxRate]);
+            }
         }
     }
 }
