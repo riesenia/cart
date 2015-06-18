@@ -1,0 +1,23 @@
+{
+    "name": "riesenia/cart",
+    "description": "PHP library providing shopping cart functionality",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tomas Saghy",
+            "email": "segy@riesenia.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4",
+        "litipk/php-bignumbers": "0.7.1"
+    },
+    "require-dev": {
+        "phpspec/phpspec": "~2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Riesenia\\Cart\\": "src/"
+        }
+    }
+}

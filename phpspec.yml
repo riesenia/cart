@@ -1,0 +1,4 @@
+suites:
+    riesenia_suite:
+        namespace: Riesenia\Cart
+        psr4_prefix: Riesenia\Cart
