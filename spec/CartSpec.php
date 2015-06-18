@@ -38,7 +38,23 @@ class CartSpec extends ObjectBehavior
         $this->getItem('B')->getCartQuantity()->shouldReturn(1);
     }
 
-    public function it_can_increase_item_quantity($item, CartItemInterface $item3)
+    public function it_can_change_item_quantity($item)
+    {
+        $item->setCartQuantity(7)->shouldBeCalled();
+
+        $this->setItemQuantity('A', 7);
+    }
+
+    public function it_can_remove_item()
+    {
+        $this->hasItem('A')->shouldReturn(true);
+
+        $this->removeItem('A');
+
+        $this->hasItem('A')->shouldReturn(false);
+    }
+
+    public function it_merges_items_of_same_id($item, CartItemInterface $item3)
     {
         // stub
         $item3->getCartId()->willReturn('A');
@@ -48,6 +64,15 @@ class CartSpec extends ObjectBehavior
         $item3->setCartContext(null)->shouldBeCalled();
 
         $this->addItem($item3, 2);
+    }
+
+    public function it_checks_empty_state_correctly()
+    {
+        $this->isEmpty()->shouldReturn(false);
+
+        $this->clear();
+
+        $this->isEmpty()->shouldReturn(true);
     }
 
     public function it_counts_totals_for_gross_prices_correctly()

@@ -97,23 +97,13 @@ class Cart
     }
 
     /**
-     * Add item to cart
+     * Check if cart is empty
      *
-     * @param CartItemInterface item
-     * @param int quantity
-     * @return void
+     * @return bool
      */
-    public function addItem(CartItemInterface $item, $quantity = 1)
+    public function isEmpty()
     {
-        if (isset($this->_items[$item->getCartId()])) {
-            $quantity += $this->_items[$item->getCartId()]->getCartQuantity();
-        }
-
-        $item->setCartQuantity($quantity);
-        $item->setCartContext($this->_context);
-        $this->_items[$item->getCartId()] = $item;
-
-        $this->_totals = null;
+        return !count($this->_items);
     }
 
     /**
@@ -137,13 +127,96 @@ class Cart
     }
 
     /**
+     * Check if cart has item with id
+     *
+     * @return bool
+     */
+    public function hasItem($cartId)
+    {
+        return isset($this->_items[$cartId]);
+    }
+
+    /**
      * Get item by cart id
      *
      * @return CartItemInterface
      */
     public function getItem($cartId)
     {
-        return isset($this->_items[$cartId]) ? $this->_items[$cartId] : null;
+        if (!$this->hasItem($cartId)) {
+            throw new \OutOfBoundsException('Requested cart item does not exist.');
+        }
+
+        return $this->_items[$cartId];
+    }
+
+    /**
+     * Add item to cart
+     *
+     * @param CartItemInterface item
+     * @param int quantity
+     * @return void
+     */
+    public function addItem(CartItemInterface $item, $quantity = 1)
+    {
+        if (isset($this->_items[$item->getCartId()])) {
+            $quantity += $this->_items[$item->getCartId()]->getCartQuantity();
+        }
+
+        $item->setCartQuantity($quantity);
+        $item->setCartContext($this->_context);
+        $this->_items[$item->getCartId()] = $item;
+
+        $this->_totals = null;
+    }
+
+    /**
+     * Remove item by cart id
+     *
+     * @param mixed cart id
+     * @return void
+     */
+    public function removeItem($cartId)
+    {
+        if (!$this->hasItem($cartId)) {
+            throw new \OutOfBoundsException('Requested cart item does not exist.');
+        }
+
+        unset($this->_items[$cartId]);
+    }
+
+    /**
+     * Set item quantity by cart id
+     *
+     * @param mixed cart id
+     * @param int quantity
+     * @return void
+     */
+    public function setItemQuantity($cartId, $quantity)
+    {
+        if (!$this->hasItem($cartId)) {
+            throw new \OutOfBoundsException('Requested cart item does not exist.');
+        }
+
+        $quantity = (int)$quantity;
+
+        if ($quantity <= 0) {
+            $this->removeItem($cartId);
+
+            return;
+        }
+
+        $this->getItem($cartId)->setCartQuantity($quantity);
+    }
+
+    /**
+     * Clear cart contents
+     *
+     * @return void
+     */
+    public function clear()
+    {
+        $this->_items = [];
     }
 
     /**
