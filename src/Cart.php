@@ -127,6 +127,19 @@ class Cart
     }
 
     /**
+     * Get items by type
+     *
+     * @param string type
+     * @return array
+     */
+    public function getItemsByType($type)
+    {
+        return array_filter($this->_items, function ($item) use ($type) {
+            return $item->getCartType() == $type;
+        });
+    }
+
+    /**
      * Check if cart has item with id
      *
      * @return bool
@@ -235,6 +248,25 @@ class Cart
     }
 
     /**
+     * Get item price (with or without VAT based on _pricesWithVat setting)
+     *
+     * @param CartItemInterface item
+     * @param int quantity (null to use item quantity)
+     * @return void
+     */
+    public function getItemPrice(CartItemInterface $item, $quantity = null)
+    {
+        $price = Decimal::create($item->getUnitPrice());
+
+        // when listed as gross
+        if ($this->_pricesWithVat) {
+            $price = $price->mul(Decimal::fromFloat(1 + $item->getTaxRate() / 100));
+        }
+
+        return $price->mul(Decimal::fromInteger(is_null($quantity) ? $item->getCartQuantity() : (int)$quantity))->round($this->_roundingDecimals);
+    }
+
+    /**
      * Clear cart contents
      *
      * @return void
@@ -297,15 +329,7 @@ class Cart
         $totals = [];
 
         foreach ($this->_items as $item) {
-            $price = Decimal::create($item->getUnitPrice());
-
-            // when listed as gross
-            if ($this->_pricesWithVat) {
-                $price = $price->mul(Decimal::fromFloat(1 + $item->getTaxRate() / 100));
-            }
-
-            // count price
-            $price = $price->mul(Decimal::fromInteger($item->getCartQuantity()))->round($this->_roundingDecimals);
+            $price = $this->getItemPrice($item);
 
             if (!isset($totals[$item->getTaxRate()])) {
                 $totals[$item->getTaxRate()] = Decimal::fromInteger(0);

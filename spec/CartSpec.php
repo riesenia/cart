@@ -10,6 +10,7 @@ class CartSpec extends ObjectBehavior
     {
         // first item
         $item->getCartId()->willReturn('A');
+        $item->getCartType()->willReturn('product');
         $item->getCartQuantity()->willReturn(2);
         $item->getUnitPrice()->willReturn(1);
         $item->getTaxRate()->willReturn(10);
@@ -21,6 +22,7 @@ class CartSpec extends ObjectBehavior
 
         // second item
         $item2->getCartId()->willReturn('B');
+        $item2->getCartType()->willReturn('product');
         $item2->getCartQuantity()->willReturn(1);
         $item2->getUnitPrice()->willReturn(0.825);
         $item2->getTaxRate()->willReturn(20);
@@ -85,6 +87,24 @@ class CartSpec extends ObjectBehavior
         $this->clear();
 
         $this->isEmpty()->shouldReturn(true);
+    }
+
+    public function it_can_get_items_by_type($item, $item2, CartItemInterface $item3)
+    {
+        // stub
+        $item3->getCartId()->willReturn('T');
+        $item3->getCartType()->willReturn('test');
+        $item3->getCartQuantity()->willReturn(1);
+        $item3->getUnitPrice()->willReturn(1);
+        $item3->getTaxRate()->willReturn(0);
+
+        $item3->setCartQuantity(1)->shouldBeCalled();
+        $item3->setCartContext(null)->shouldBeCalled();
+
+        $this->addItem($item3);
+
+        $this->getItemsByType('test')->shouldReturn(['T' => $item3]);
+        $this->getItemsByType('product')->shouldReturn(['A' => $item, 'B' => $item2]);
     }
 
     public function it_counts_totals_for_gross_prices_correctly()
