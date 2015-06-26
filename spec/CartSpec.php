@@ -38,6 +38,18 @@ class CartSpec extends ObjectBehavior
         $this->getItem('B')->getCartQuantity()->shouldReturn(1);
     }
 
+    public function it_can_set_items($item, $item2)
+    {
+        $items = [$item, $item2];
+
+        $item->getCartQuantity()->willReturn(3);
+        $item->setCartQuantity(3)->shouldBeCalled();
+
+        $this->setItems($items);
+
+        $this->getTotal()->__toString()->shouldReturn('4.29');
+    }
+
     public function it_can_change_item_quantity($item)
     {
         $item->setCartQuantity(7)->shouldBeCalled();

@@ -59,6 +59,11 @@ $cart->setItemQuantity('abc', 7);
 $cart->removeItem('abc');
 ```
 
+### Batch cart items manipulation
+
+Cart can be cleared using *clear()* method. Items can be set using *setItems()* method. Please note
+that *setItems* will call *clear*. All items have to implement *CartItemInterface*.
+
 ### Getting totals
 
 Cart works with *Decimal* class (see [litipk/php-bignumbers](https://github.com/Litipk/php-bignumbers/wiki/Decimal)).

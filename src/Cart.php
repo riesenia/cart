@@ -171,6 +171,29 @@ class Cart
     }
 
     /**
+     * Set cart items
+     *
+     * @param array|Traversable items
+     * @return void
+     */
+    public function setItems($items)
+    {
+        if (!is_array($items) && !$items instanceof \Traversable) {
+            throw new InvalidArgumentException('Only an array or Traversable is allowed for setItems.');
+        }
+
+        $this->clear();
+
+        foreach ($items as $item) {
+            if (is_subclass_of($item, 'CartItemInterface')) {
+                throw new InvalidArgumentException('All items have to implement CartItemInterface.');
+            }
+
+            $this->addItem($item, $item->getCartQuantity());
+        }
+    }
+
+    /**
      * Remove item by cart id
      *
      * @param mixed cart id
