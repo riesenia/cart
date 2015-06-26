@@ -183,6 +183,7 @@ class Cart
         }
 
         unset($this->_items[$cartId]);
+        $this->_totals = null;
     }
 
     /**
@@ -207,6 +208,7 @@ class Cart
         }
 
         $this->getItem($cartId)->setCartQuantity($quantity);
+        $this->_totals = null;
     }
 
     /**
@@ -217,6 +219,7 @@ class Cart
     public function clear()
     {
         $this->_items = [];
+        $this->_totals = null;
     }
 
     /**
