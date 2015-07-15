@@ -23,6 +23,13 @@ interface CartItemInterface
     public function getCartType();
 
     /**
+     * Get name of the item
+     *
+     * @return string
+     */
+    public function getCartName();
+
+    /**
      * Set cart context
      *
      * @param mixed
