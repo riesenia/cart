@@ -260,7 +260,7 @@ class Cart
 
         // when listed as gross
         if ($this->_pricesWithVat) {
-            $price = $price->mul(Decimal::fromFloat(1 + $item->getTaxRate() / 100));
+            $price = $price->mul(Decimal::fromFloat(1 + (float)$item->getTaxRate() / 100));
         }
 
         return $price->mul(Decimal::fromInteger(is_null($quantity) ? $item->getCartQuantity() : (int)$quantity))->round($this->_roundingDecimals);
@@ -280,55 +280,64 @@ class Cart
     /**
      * Get subtotal
      *
+     * @param string type
      * @return \Litipk\BigNumbers\Decimal
      */
-    public function getSubtotal()
+    public function getSubtotal($type = '~')
     {
-        if (is_null($this->_totals)) {
-            $this->_calculate();
+        if (!isset($this->_totals[$type])) {
+            $this->_calculate($type);
         }
 
-        return $this->_totals['subtotal'];
+        return $this->_totals[$type]['subtotal'];
     }
 
     /**
      * Get total
      *
+     * @param string type
      * @return \Litipk\BigNumbers\Decimal
      */
-    public function getTotal()
+    public function getTotal($type = '~')
     {
-        if (is_null($this->_totals)) {
-            $this->_calculate();
+        if (!isset($this->_totals[$type])) {
+            $this->_calculate($type);
         }
 
-        return $this->_totals['total'];
+        return $this->_totals[$type]['total'];
     }
 
     /**
      * Get taxes
      *
+     * @param string type
      * @return array
      */
-    public function getTaxes()
+    public function getTaxes($type = '~')
     {
-        if (is_null($this->_totals)) {
-            $this->_calculate();
+        if (!isset($this->_totals[$type])) {
+            $this->_calculate($type);
         }
 
-        return $this->_totals['taxes'];
+        return $this->_totals[$type]['taxes'];
     }
 
     /**
      * Calculate totals
      *
+     * @param string type
      * @return void
      */
-    protected function _calculate()
+    protected function _calculate($type)
     {
         $totals = [];
 
         foreach ($this->_items as $item) {
+            // test type
+            if (!$this->_typeCondition($item->getCartType(), $type)) {
+                continue;
+            }
+
             $price = $this->getItemPrice($item);
 
             if (!isset($totals[$item->getTaxRate()])) {
@@ -338,18 +347,31 @@ class Cart
             $totals[$item->getTaxRate()] = $totals[$item->getTaxRate()]->add($price);
         }
 
-        $this->_totals = ['subtotal' => Decimal::fromInteger(0), 'taxes' => [], 'total' => Decimal::fromInteger(0)];
+        $this->_totals[$type] = ['subtotal' => Decimal::fromInteger(0), 'taxes' => [], 'total' => Decimal::fromInteger(0)];
 
         foreach ($totals as $taxRate => $amount) {
             if ($this->_pricesWithVat) {
-                $this->_totals['total'] = $this->_totals['total']->add($amount);
-                $this->_totals['taxes'][$taxRate] = $amount->mul(Decimal::fromFloat(1 - 1 / (1 + $taxRate / 100)))->round($this->_roundingDecimals);
-                $this->_totals['subtotal'] = $this->_totals['subtotal']->add($amount)->sub($this->_totals['taxes'][$taxRate]);
+                $this->_totals[$type]['total'] = $this->_totals[$type]['total']->add($amount);
+                $this->_totals[$type]['taxes'][$taxRate] = $amount->mul(Decimal::fromFloat(1 - 1 / (1 + (float)$taxRate / 100)))->round($this->_roundingDecimals);
+                $this->_totals[$type]['subtotal'] = $this->_totals[$type]['subtotal']->add($amount)->sub($this->_totals[$type]['taxes'][$taxRate]);
             } else {
-                $this->_totals['subtotal'] = $this->_totals['subtotal']->add($amount);
-                $this->_totals['taxes'][$taxRate] = $amount->mul(Decimal::fromFloat($taxRate / 100))->round($this->_roundingDecimals);
-                $this->_totals['total'] = $this->_totals['total']->add($amount)->add($this->_totals['taxes'][$taxRate]);
+                $this->_totals[$type]['subtotal'] = $this->_totals[$type]['subtotal']->add($amount);
+                $this->_totals[$type]['taxes'][$taxRate] = $amount->mul(Decimal::fromFloat((float)$taxRate / 100))->round($this->_roundingDecimals);
+                $this->_totals[$type]['total'] = $this->_totals[$type]['total']->add($amount)->add($this->_totals[$type]['taxes'][$taxRate]);
             }
         }
+    }
+
+    protected function _typeCondition($itemType, $type)
+    {
+        if (strpos($type, '~') === 0) {
+            $type = explode(',', substr($type, 1));
+
+            return !in_array($itemType, $type);
+        }
+
+        $type = explode(',', $type);
+
+        return in_array($itemType, $type);
     }
 }

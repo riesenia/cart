@@ -90,6 +90,19 @@ echo $cart->getTaxes()[20];
 echo $cart->getTotal();
 ```
 
+Totals can be also count by type:
+
+```php
+// get totals of type 'product'
+echo $cart->getTotal('product');
+
+// get totals of type 'product' and 'service'
+echo $cart->getTotal('product,service');
+
+// get totals of all items except type 'product' and 'service'
+echo $cart->getTotal('~product,service');
+```
+
 ## Tests
 
 You can run the unit tests with the following command:

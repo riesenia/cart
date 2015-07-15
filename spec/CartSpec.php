@@ -105,6 +105,11 @@ class CartSpec extends ObjectBehavior
 
         $this->getItemsByType('test')->shouldReturn(['T' => $item3]);
         $this->getItemsByType('product')->shouldReturn(['A' => $item, 'B' => $item2]);
+
+        $this->getTotal('product')->__toString()->shouldReturn('3.19');
+        $this->getTotal('test')->__toString()->shouldReturn('1.00');
+        $this->getTotal('product,nonexistent,test')->__toString()->shouldReturn('4.19');
+        $this->getTotal('~test')->__toString()->shouldReturn('3.19');
     }
 
     public function it_counts_totals_for_gross_prices_correctly()
