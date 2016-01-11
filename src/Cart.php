@@ -257,6 +257,10 @@ class Cart
     public function getItemPrice(CartItemInterface $item, $quantity = null)
     {
         $item->setCartContext($this->_context);
+        if (!is_null($quantity)) {
+            $item->setCartQuantity($quantity);
+        }
+
         $price = Decimal::create($item->getUnitPrice());
 
         // when listed as gross
@@ -264,7 +268,7 @@ class Cart
             $price = $price->mul(Decimal::fromFloat(1 + (float)$item->getTaxRate() / 100));
         }
 
-        return $price->mul(Decimal::fromInteger(is_null($quantity) ? $item->getCartQuantity() : (int)$quantity))->round($this->_roundingDecimals);
+        return $price->mul(Decimal::fromInteger((int)$item->getCartQuantity()))->round($this->_roundingDecimals);
     }
 
     /**
