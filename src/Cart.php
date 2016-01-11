@@ -256,6 +256,7 @@ class Cart
      */
     public function getItemPrice(CartItemInterface $item, $quantity = null)
     {
+        $item->setCartContext($this->_context);
         $price = Decimal::create($item->getUnitPrice());
 
         // when listed as gross
