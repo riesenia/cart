@@ -198,7 +198,7 @@ class Cart
         $this->clear();
 
         foreach ($items as $item) {
-            if (is_subclass_of($item, 'CartItemInterface')) {
+            if (!$item instanceof CartItemInterface) {
                 throw new \InvalidArgumentException('All items have to implement CartItemInterface.');
             }
 
