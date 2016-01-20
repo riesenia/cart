@@ -3,6 +3,7 @@ namespace spec\Riesenia\Cart;
 
 use PhpSpec\ObjectBehavior;
 use Riesenia\Cart\CartItemInterface;
+use Riesenia\Cart\WeightedCartItemInterface;
 
 class CartSpec extends ObjectBehavior
 {
@@ -89,7 +90,7 @@ class CartSpec extends ObjectBehavior
         $this->isEmpty()->shouldReturn(true);
     }
 
-    public function it_can_get_items_by_type($item, $item2, CartItemInterface $item3)
+    public function it_can_get_items_by_type($item, $item2, CartItemInterface $item3, WeightedCartItemInterface $item4)
     {
         // stub
         $item3->getCartId()->willReturn('T');
@@ -110,6 +111,24 @@ class CartSpec extends ObjectBehavior
         $this->getTotal('test')->__toString()->shouldReturn('1.00');
         $this->getTotal('product,nonexistent,test')->__toString()->shouldReturn('4.19');
         $this->getTotal('~test')->__toString()->shouldReturn('3.19');
+
+        // stub
+        $item4->getCartId()->willReturn('W');
+        $item4->getCartType()->willReturn('weighted');
+        $item4->getCartQuantity()->willReturn(3);
+        $item4->getUnitPrice()->willReturn(1);
+        $item4->getTaxRate()->willReturn(0);
+        $item4->getWeight()->willReturn(0.5);
+
+        $item4->setCartQuantity(3)->shouldBeCalled();
+        $item4->setCartContext(null)->shouldBeCalled();
+
+        $this->addItem($item4, 3);
+
+        $this->getWeight()->__toString()->shouldReturn('1.500000');
+        $this->getWeight('weighted')->__toString()->shouldReturn('1.500000');
+        $this->getWeight('weighted,nonexistent,test')->__toString()->shouldReturn('1.500000');
+        $this->getWeight('product,nonexistent,test')->__toString()->shouldReturn('0');
     }
 
     public function it_counts_totals_for_gross_prices_correctly()

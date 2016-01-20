@@ -257,6 +257,7 @@ class Cart
     public function getItemPrice(CartItemInterface $item, $quantity = null)
     {
         $item->setCartContext($this->_context);
+
         if (!is_null($quantity)) {
             $item->setCartQuantity($quantity);
         }
@@ -328,6 +329,21 @@ class Cart
     }
 
     /**
+     * Get weight
+     *
+     * @param string type
+     * @return \Litipk\BigNumbers\Decimal
+     */
+    public function getWeight($type = '~')
+    {
+        if (!isset($this->_totals[$type])) {
+            $this->_calculate($type);
+        }
+
+        return $this->_totals[$type]['weight'];
+    }
+
+    /**
      * Calculate totals
      *
      * @param string type
@@ -336,6 +352,7 @@ class Cart
     protected function _calculate($type)
     {
         $totals = [];
+        $weight = Decimal::fromInteger(0);
 
         foreach ($this->_items as $item) {
             // test type
@@ -350,9 +367,16 @@ class Cart
             }
 
             $totals[$item->getTaxRate()] = $totals[$item->getTaxRate()]->add($price);
+
+            // weight
+            if ($item instanceof WeightedCartItemInterface) {
+                $itemWeight = Decimal::create($item->getWeight());
+                $itemWeight = $itemWeight->mul(Decimal::fromInteger((int)$item->getCartQuantity()));
+                $weight = $weight->add($itemWeight);
+            }
         }
 
-        $this->_totals[$type] = ['subtotal' => Decimal::fromInteger(0), 'taxes' => [], 'total' => Decimal::fromInteger(0)];
+        $this->_totals[$type] = ['subtotal' => Decimal::fromInteger(0), 'taxes' => [], 'total' => Decimal::fromInteger(0), 'weight' => $weight->round(6)];
 
         foreach ($totals as $taxRate => $amount) {
             if ($this->_pricesWithVat) {

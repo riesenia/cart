@@ -103,6 +103,16 @@ echo $cart->getTotal('product,service');
 echo $cart->getTotal('~product,service');
 ```
 
+### Getting weight (since 1.4)
+
+As of 1.4 item implementing *WeightedCartItemInterface* can be added to cart, so cart can count total weight.
+Weight can be counted by type using same format as for counting totals.
+
+```php
+// get weight of type 'product'
+echo $cart->getWeight('product');
+```
+
 ## Tests
 
 You can run the unit tests with the following command:
