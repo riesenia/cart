@@ -262,7 +262,7 @@ class Cart
             $item->setCartQuantity($quantity);
         }
 
-        $price = Decimal::create($item->getUnitPrice());
+        $price = Decimal::fromFloat((float)$item->getUnitPrice());
 
         // when listed as gross
         if ($this->_pricesWithVat) {
@@ -370,7 +370,7 @@ class Cart
 
             // weight
             if ($item instanceof WeightedCartItemInterface) {
-                $itemWeight = Decimal::create($item->getWeight());
+                $itemWeight = Decimal::fromFloat((float)$item->getWeight());
                 $itemWeight = $itemWeight->mul(Decimal::fromInteger((int)$item->getCartQuantity()));
                 $weight = $weight->add($itemWeight);
             }
