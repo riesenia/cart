@@ -10,7 +10,7 @@
     ],
     "require": {
         "php": ">=5.4",
-        "litipk/php-bignumbers": "~0.7"
+        "litipk/php-bignumbers": "0.7.2"
     },
     "require-dev": {
         "phpspec/phpspec": "~2.0"
