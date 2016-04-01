@@ -252,24 +252,42 @@ class Cart
      *
      * @param CartItemInterface item
      * @param int quantity (null to use item quantity)
-     * @return void
+     * @return \Litipk\BigNumbers\Decimal
      */
     public function getItemPrice(CartItemInterface $item, $quantity = null)
     {
         $item->setCartContext($this->_context);
 
-        if (!is_null($quantity)) {
-            $item->setCartQuantity($quantity);
+        return $this->countPrice($item->getUnitPrice(), $item->getTaxRate(), $quantity ?: $item->getCartQuantity());
+    }
+
+    /**
+     * Count price
+     *
+     * @param float unit price (without VAT)
+     * @param float tax rate
+     * @param int quantity
+     * @param bool count price with VAT (null to use cart default)
+     * @param int rounding decimals (null to use cart default)
+     * @return \Litipk\BigNumbers\Decimal
+     */
+    public function countPrice($unitPrice, $taxRate, $quantity = 1, $pricesWithVat = null, $roundingDecimals = null)
+    {
+        if (is_null($pricesWithVat)) {
+            $pricesWithVat = $this->_pricesWithVat;
         }
 
-        $price = Decimal::fromFloat((float)$item->getUnitPrice());
-
-        // when listed as gross
-        if ($this->_pricesWithVat) {
-            $price = $price->mul(Decimal::fromFloat(1 + (float)$item->getTaxRate() / 100));
+        if (is_null($roundingDecimals)) {
+            $roundingDecimals = $this->_roundingDecimals;
         }
 
-        return $price->mul(Decimal::fromInteger((int)$item->getCartQuantity()))->round($this->_roundingDecimals);
+        $price = Decimal::fromFloat((float)$unitPrice);
+
+        if ($pricesWithVat) {
+            $price = $price->mul(Decimal::fromFloat(1 + (float)$taxRate / 100));
+        }
+
+        return $price->round($roundingDecimals)->mul(Decimal::fromInteger((int)$quantity));
     }
 
     /**
