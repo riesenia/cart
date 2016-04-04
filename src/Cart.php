@@ -41,6 +41,13 @@ class Cart
     protected $_totals;
 
     /**
+     * Sorting by type
+     *
+     * @var array
+     */
+    protected $_sortByType;
+
+    /**
      * Constructor
      *
      * @param mixed context data (passed to cart items for custom price logic)
@@ -97,6 +104,18 @@ class Cart
     }
 
     /**
+     * Set sorting by type
+     *
+     * @param array
+     * @return void
+     */
+    public function sortByType($sorting)
+    {
+        $this->_sortByType = array_flip($sorting);
+        uasort($this->_items, [$this, '_sortCompare']);
+    }
+
+    /**
      * Check if cart is empty
      *
      * @return bool
@@ -107,6 +126,17 @@ class Cart
     }
 
     /**
+     * Check if cart is empty by tyoe
+     *
+     * @param string type
+     * @return bool
+     */
+    public function isEmptyByType($type)
+    {
+        return !count($this->getItemsByType($type));
+    }
+
+    /**
      * Get items count
      *
      * @return int
@@ -114,6 +144,17 @@ class Cart
     public function countItems()
     {
         return count($this->_items);
+    }
+
+    /**
+     * Get items count by type
+     *
+     * @param string type
+     * @return int
+     */
+    public function countItemsByType($type)
+    {
+        return count($this->getItemsByType($type));
     }
 
     /**
@@ -134,7 +175,7 @@ class Cart
      */
     public function getItemsByType($type)
     {
-        return array_filter($this->_items, function ($item) use ($type) {
+        return array_filter($this->getItems(), function ($item) use ($type) {
             return $item->getCartType() == $type;
         });
     }
@@ -181,6 +222,7 @@ class Cart
         $this->_items[$item->getCartId()] = $item;
 
         $this->_totals = null;
+        uasort($this->_items, [$this, '_sortCompare']);
     }
 
     /**
@@ -409,6 +451,12 @@ class Cart
         }
     }
 
+    /**
+     * Validate item type against condition
+     *
+     * @param string item type
+     * @param string type condition
+     */
     protected function _typeCondition($itemType, $type)
     {
         if (strpos($type, '~') === 0) {
@@ -420,5 +468,20 @@ class Cart
         $type = explode(',', $type);
 
         return in_array($itemType, $type);
+    }
+
+    /**
+     * Sort items compare function
+     *
+     * @param CartItemInterface
+     * @param CartItemInterface
+     * @return int
+     */
+    protected function _sortCompare(CartItemInterface $a, CartItemInterface $b)
+    {
+        $aSort = isset($this->_sortByType[$a->getCartType()]) ? $this->_sortByType[$a->getCartType()] : 1000;
+        $bSort = isset($this->_sortByType[$b->getCartType()]) ? $this->_sortByType[$b->getCartType()] : 1000;
+
+        return ($aSort < $bSort) ? -1 : 1;
     }
 }

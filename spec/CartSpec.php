@@ -73,6 +73,7 @@ class CartSpec extends ObjectBehavior
     {
         // stub
         $item3->getCartId()->willReturn('A');
+        $item3->getCartType()->willReturn('product');
 
         $item->getCartQuantity()->shouldBeCalled();
         $item3->setCartQuantity(4)->shouldBeCalled();
