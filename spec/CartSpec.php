@@ -140,6 +140,14 @@ class CartSpec extends ObjectBehavior
         $taxes = $this->getTaxes();
         $taxes[10]->__toString()->shouldReturn('0.20');
         $taxes[20]->__toString()->shouldReturn('0.17');
+
+        $taxBases = $this->getTaxBases();
+        $taxBases[10]->__toString()->shouldReturn('2.00');
+        $taxBases[20]->__toString()->shouldReturn('0.82');
+
+        $taxTotals = $this->getTaxTotals();
+        $taxTotals[10]->__toString()->shouldReturn('2.20');
+        $taxTotals[20]->__toString()->shouldReturn('0.99');
     }
 
     public function it_counts_totals_for_net_prices_correctly()
@@ -152,5 +160,13 @@ class CartSpec extends ObjectBehavior
         $taxes = $this->getTaxes();
         $taxes[10]->__toString()->shouldReturn('0.20');
         $taxes[20]->__toString()->shouldReturn('0.17');
+
+        $taxBases = $this->getTaxBases();
+        $taxBases[10]->__toString()->shouldReturn('2.00');
+        $taxBases[20]->__toString()->shouldReturn('0.83');
+
+        $taxTotals = $this->getTaxTotals();
+        $taxTotals[10]->__toString()->shouldReturn('2.20');
+        $taxTotals[20]->__toString()->shouldReturn('1.00');
     }
 }
