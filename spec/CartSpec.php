@@ -107,6 +107,7 @@ class CartSpec extends ObjectBehavior
 
         $this->getItemsByType('test')->shouldReturn(['T' => $item3]);
         $this->getItemsByType('product')->shouldReturn(['A' => $item, 'B' => $item2]);
+        $this->getItemsByType('~test')->shouldReturn(['A' => $item, 'B' => $item2]);
 
         $this->getTotal('product')->__toString()->shouldReturn('3.19');
         $this->getTotal('test')->__toString()->shouldReturn('1.00');

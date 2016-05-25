@@ -175,9 +175,15 @@ class Cart
      */
     public function getItemsByType($type)
     {
-        return array_filter($this->getItems(), function ($item) use ($type) {
-            return $item->getCartType() == $type;
-        });
+        $items = [];
+
+        foreach ($this->getItems() as $id => $item) {
+            if ($this->_typeCondition($item->getCartType(), $type)) {
+                $items[$id] = $item;
+            }
+        }
+
+        return $items;
     }
 
     /**
