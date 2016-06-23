@@ -41,13 +41,6 @@ class Cart
     protected $_totals;
 
     /**
-     * Sorting by type
-     *
-     * @var array
-     */
-    protected $_sortByType;
-
-    /**
      * Constructor
      *
      * @param mixed context data (passed to cart items for custom price logic)
@@ -111,8 +104,14 @@ class Cart
      */
     public function sortByType($sorting)
     {
-        $this->_sortByType = array_flip($sorting);
-        uasort($this->_items, [$this, '_sortCompare']);
+        $sorting = array_flip($sorting);
+
+        uasort($this->_items, function (CartItemInterface $a, CartItemInterface $b) use ($sorting) {
+            $aSort = isset($sorting[$a->getCartType()]) ? $sorting[$a->getCartType()] : 1000;
+            $bSort = isset($sorting[$b->getCartType()]) ? $sorting[$b->getCartType()] : 1000;
+
+            return ($aSort < $bSort) ? -1 : 1;
+        });
     }
 
     /**
@@ -160,11 +159,16 @@ class Cart
     /**
      * Get items
      *
+     * @param null|callable filter
      * @return array
      */
-    public function getItems()
+    public function getItems($filter = null)
     {
-        return $this->_items;
+        if ($filter && !is_callable($filter)) {
+            throw new \InvalidArgumentException('Filter for getItems method has to be callable.');
+        }
+
+        return $filter ? array_filter($this->_items, $filter) : $this->_items;
     }
 
     /**
@@ -175,15 +179,7 @@ class Cart
      */
     public function getItemsByType($type)
     {
-        $items = [];
-
-        foreach ($this->getItems() as $id => $item) {
-            if ($this->_typeCondition($item->getCartType(), $type)) {
-                $items[$id] = $item;
-            }
-        }
-
-        return $items;
+        return $this->getItems($this->_getTypeCondition($type));
     }
 
     /**
@@ -228,7 +224,6 @@ class Cart
         $this->_items[$item->getCartId()] = $item;
 
         $this->_totals = null;
-        uasort($this->_items, [$this, '_sortCompare']);
     }
 
     /**
@@ -462,12 +457,7 @@ class Cart
         $totals = [];
         $weight = Decimal::fromInteger(0);
 
-        foreach ($this->_items as $item) {
-            // test type
-            if (!$this->_typeCondition($item->getCartType(), $type)) {
-                continue;
-            }
-
+        foreach ($this->getItems($this->_getTypeCondition($type)) as $item) {
             $price = $this->getItemPrice($item);
 
             if (!isset($totals[$item->getTaxRate()])) {
@@ -500,36 +490,24 @@ class Cart
     }
 
     /**
-     * Validate item type against condition
+     * Build condition for item type
      *
      * @param string item type
-     * @param string type condition
+     * @return Closure
      */
-    protected function _typeCondition($itemType, $type)
+    protected function _getTypeCondition($type)
     {
-        if (strpos($type, '~') === 0) {
-            $type = explode(',', substr($type, 1));
+        $negative = false;
 
-            return !in_array($itemType, $type);
+        if (strpos($type, '~') === 0) {
+            $negative = true;
+            $type = substr($type, 1);
         }
 
         $type = explode(',', $type);
 
-        return in_array($itemType, $type);
-    }
-
-    /**
-     * Sort items compare function
-     *
-     * @param CartItemInterface
-     * @param CartItemInterface
-     * @return int
-     */
-    protected function _sortCompare(CartItemInterface $a, CartItemInterface $b)
-    {
-        $aSort = isset($this->_sortByType[$a->getCartType()]) ? $this->_sortByType[$a->getCartType()] : 1000;
-        $bSort = isset($this->_sortByType[$b->getCartType()]) ? $this->_sortByType[$b->getCartType()] : 1000;
-
-        return ($aSort < $bSort) ? -1 : 1;
+        return Function (CartItemInterface $item) use ($type, $negative) {
+            return $negative ? !in_array($item->getCartType(), $type) : in_array($item->getCartType(), $type);
+        };
     }
 }
