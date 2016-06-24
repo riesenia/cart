@@ -74,7 +74,7 @@ class Cart
      */
     public function setPricesWithVat($pricesWithVat)
     {
-        $this->_pricesWithVat = (bool)$pricesWithVat;
+        $this->_pricesWithVat = (bool) $pricesWithVat;
         $this->_cartModified();
     }
 
@@ -86,7 +86,7 @@ class Cart
      */
     public function setRoundingDecimals($roundingDecimals)
     {
-        $roundingDecimals = (int)$roundingDecimals;
+        $roundingDecimals = (int) $roundingDecimals;
 
         if ($roundingDecimals < 0) {
             throw new \RangeException('Invalid value for rounding decimals.');
@@ -278,7 +278,7 @@ class Cart
             throw new \OutOfBoundsException('Requested cart item does not exist.');
         }
 
-        $quantity = (int)$quantity;
+        $quantity = (int) $quantity;
 
         if ($quantity <= 0) {
             $this->removeItem($cartId);
@@ -324,13 +324,13 @@ class Cart
             $roundingDecimals = $this->_roundingDecimals;
         }
 
-        $price = Decimal::fromFloat((float)$unitPrice);
+        $price = Decimal::fromFloat((float) $unitPrice);
 
         if ($pricesWithVat) {
-            $price = $price->mul(Decimal::fromFloat(1 + (float)$taxRate / 100));
+            $price = $price->mul(Decimal::fromFloat(1 + (float) $taxRate / 100));
         }
 
-        return $price->round($roundingDecimals)->mul(Decimal::fromInteger((int)$quantity));
+        return $price->round($roundingDecimals)->mul(Decimal::fromInteger((int) $quantity));
     }
 
     /**
@@ -345,6 +345,40 @@ class Cart
     }
 
     /**
+     * Get totals using filter
+     * If filter is string, uses _getTypeCondition to build filter function.
+     *
+     * @param mixed filter
+     * @return array
+     */
+    public function getTotals($filter = '~')
+    {
+        $store = false;
+
+        if (is_string($filter)) {
+            $store = $filter;
+
+            if (isset($this->_totals[$store])) {
+                return $this->_totals[$store];
+            }
+
+            $filter = $this->_getTypeCondition($filter);
+        }
+
+        if (!is_callable($filter)) {
+            throw new \InvalidArgumentException('Filter for getTotals method has to be callable.');
+        }
+
+        $totals = $this->_calculateTotals($filter);
+
+        if ($store) {
+            $this->_totals[$store] = $totals;
+        }
+
+        return $totals;
+    }
+
+    /**
      * Get subtotal
      *
      * @param string type
@@ -352,13 +386,9 @@ class Cart
      */
     public function getSubtotal($type = '~')
     {
-        if (!isset($this->_totals[$type])) {
-            $this->_calculate($type);
-        }
-
         $subtotal = Decimal::fromInteger(0);
 
-        foreach ($this->_totals[$type]['subtotals'] as $item) {
+        foreach ($this->getTotals($type)['subtotals'] as $item) {
             $subtotal = $subtotal->add($item);
         }
 
@@ -373,13 +403,9 @@ class Cart
      */
     public function getTotal($type = '~')
     {
-        if (!isset($this->_totals[$type])) {
-            $this->_calculate($type);
-        }
-
         $total = Decimal::fromInteger(0);
 
-        foreach ($this->_totals[$type]['totals'] as $item) {
+        foreach ($this->getTotals($type)['totals'] as $item) {
             $total = $total->add($item);
         }
 
@@ -394,11 +420,7 @@ class Cart
      */
     public function getTaxes($type = '~')
     {
-        if (!isset($this->_totals[$type])) {
-            $this->_calculate($type);
-        }
-
-        return $this->_totals[$type]['taxes'];
+        return $this->getTotals($type)['taxes'];
     }
 
     /**
@@ -409,11 +431,7 @@ class Cart
      */
     public function getTaxBases($type = '~')
     {
-        if (!isset($this->_totals[$type])) {
-            $this->_calculate($type);
-        }
-
-        return $this->_totals[$type]['subtotals'];
+        return $this->getTotals($type)['subtotals'];
     }
 
     /**
@@ -424,11 +442,7 @@ class Cart
      */
     public function getTaxTotals($type = '~')
     {
-        if (!isset($this->_totals[$type])) {
-            $this->_calculate($type);
-        }
-
-        return $this->_totals[$type]['totals'];
+        return $this->getTotals($type)['totals'];
     }
 
     /**
@@ -439,54 +453,56 @@ class Cart
      */
     public function getWeight($type = '~')
     {
-        if (!isset($this->_totals[$type])) {
-            $this->_calculate($type);
-        }
-
-        return $this->_totals[$type]['weight'];
+        return $this->getTotals($type)['weight'];
     }
 
     /**
      * Calculate totals
      *
-     * @param string type
-     * @return void
+     * @param callable filter
+     * @return array
      */
-    protected function _calculate($type)
+    protected function _calculateTotals($filter)
     {
-        $totals = [];
+        if (!is_callable($filter)) {
+            throw new \InvalidArgumentException('Filter for _calculateTotals method has to be callable.');
+        }
+
+        $taxTotals = [];
         $weight = Decimal::fromInteger(0);
 
-        foreach ($this->getItems($this->_getTypeCondition($type)) as $item) {
+        foreach ($this->getItems($filter) as $item) {
             $price = $this->getItemPrice($item);
 
-            if (!isset($totals[$item->getTaxRate()])) {
-                $totals[$item->getTaxRate()] = Decimal::fromInteger(0);
+            if (!isset($taxTotals[$item->getTaxRate()])) {
+                $taxTotals[$item->getTaxRate()] = Decimal::fromInteger(0);
             }
 
-            $totals[$item->getTaxRate()] = $totals[$item->getTaxRate()]->add($price);
+            $taxTotals[$item->getTaxRate()] = $taxTotals[$item->getTaxRate()]->add($price);
 
             // weight
             if ($item instanceof WeightedCartItemInterface) {
-                $itemWeight = Decimal::fromFloat((float)$item->getWeight());
-                $itemWeight = $itemWeight->mul(Decimal::fromInteger((int)$item->getCartQuantity()));
+                $itemWeight = Decimal::fromFloat((float) $item->getWeight());
+                $itemWeight = $itemWeight->mul(Decimal::fromInteger((int) $item->getCartQuantity()));
                 $weight = $weight->add($itemWeight);
             }
         }
 
-        $this->_totals[$type] = ['subtotals' => [], 'taxes' => [], 'totals' => [], 'weight' => $weight->round(6)];
+        $totals = ['subtotals' => [], 'taxes' => [], 'totals' => [], 'weight' => $weight->round(6)];
 
-        foreach ($totals as $taxRate => $amount) {
+        foreach ($taxTotals as $taxRate => $amount) {
             if ($this->_pricesWithVat) {
-                $this->_totals[$type]['totals'][$taxRate] = $amount;
-                $this->_totals[$type]['taxes'][$taxRate] = $amount->mul(Decimal::fromFloat(1 - 1 / (1 + (float)$taxRate / 100)))->round($this->_roundingDecimals);
-                $this->_totals[$type]['subtotals'][$taxRate] = $amount->sub($this->_totals[$type]['taxes'][$taxRate]);
+                $totals['totals'][$taxRate] = $amount;
+                $totals['taxes'][$taxRate] = $amount->mul(Decimal::fromFloat(1 - 1 / (1 + (float) $taxRate / 100)))->round($this->_roundingDecimals);
+                $totals['subtotals'][$taxRate] = $amount->sub($totals['taxes'][$taxRate]);
             } else {
-                $this->_totals[$type]['subtotals'][$taxRate] = $amount;
-                $this->_totals[$type]['taxes'][$taxRate] = $amount->mul(Decimal::fromFloat((float)$taxRate / 100))->round($this->_roundingDecimals);
-                $this->_totals[$type]['totals'][$taxRate] = $amount->add($this->_totals[$type]['taxes'][$taxRate]);
+                $totals['subtotals'][$taxRate] = $amount;
+                $totals['taxes'][$taxRate] = $amount->mul(Decimal::fromFloat((float) $taxRate / 100))->round($this->_roundingDecimals);
+                $totals['totals'][$taxRate] = $amount->add($totals['taxes'][$taxRate]);
             }
         }
+
+        return $totals;
     }
 
     /**
