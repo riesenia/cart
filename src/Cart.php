@@ -63,7 +63,7 @@ class Cart
     public function setContext($context)
     {
         $this->_context = $context;
-        $this->_totals = null;
+        $this->_cartModified();
     }
 
     /**
@@ -75,7 +75,7 @@ class Cart
     public function setPricesWithVat($pricesWithVat)
     {
         $this->_pricesWithVat = (bool)$pricesWithVat;
-        $this->_totals = null;
+        $this->_cartModified();
     }
 
     /**
@@ -93,7 +93,7 @@ class Cart
         }
 
         $this->_roundingDecimals = $roundingDecimals;
-        $this->_totals = null;
+        $this->_cartModified();
     }
 
     /**
@@ -223,7 +223,7 @@ class Cart
         $item->setCartContext($this->_context);
         $this->_items[$item->getCartId()] = $item;
 
-        $this->_totals = null;
+        $this->_cartModified();
     }
 
     /**
@@ -262,7 +262,7 @@ class Cart
         }
 
         unset($this->_items[$cartId]);
-        $this->_totals = null;
+        $this->_cartModified();
     }
 
     /**
@@ -287,7 +287,7 @@ class Cart
         }
 
         $this->getItem($cartId)->setCartQuantity($quantity);
-        $this->_totals = null;
+        $this->_cartModified();
     }
 
     /**
@@ -341,7 +341,7 @@ class Cart
     public function clear()
     {
         $this->_items = [];
-        $this->_totals = null;
+        $this->_cartModified();
     }
 
     /**
@@ -509,5 +509,15 @@ class Cart
         return Function (CartItemInterface $item) use ($type, $negative) {
             return $negative ? !in_array($item->getCartType(), $type) : in_array($item->getCartType(), $type);
         };
+    }
+
+    /**
+     * Clear cached totals
+     *
+     * @return void
+     */
+    protected function _cartModified()
+    {
+        $this->_totals = null;
     }
 }
