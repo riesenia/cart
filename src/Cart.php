@@ -63,7 +63,10 @@ class Cart
     public function setContext($context)
     {
         $this->_context = $context;
-        $this->_cartModified();
+
+        if ($this->_items) {
+            $this->_cartModified();
+        }
     }
 
     /**
@@ -75,7 +78,10 @@ class Cart
     public function setPricesWithVat($pricesWithVat)
     {
         $this->_pricesWithVat = (bool) $pricesWithVat;
-        $this->_cartModified();
+
+        if ($this->_items) {
+            $this->_cartModified();
+        }
     }
 
     /**
@@ -93,7 +99,10 @@ class Cart
         }
 
         $this->_roundingDecimals = $roundingDecimals;
-        $this->_cartModified();
+
+        if ($this->_items) {
+            $this->_cartModified();
+        }
     }
 
     /**
