@@ -295,8 +295,12 @@ class Cart
             return;
         }
 
-        $this->getItem($cartId)->setCartQuantity($quantity);
-        $this->_cartModified();
+        $item = $this->getItem($cartId);
+
+        if ($item->getCartQuantity() != $quantity) {
+            $item->setCartQuantity($quantity);
+            $this->_cartModified();
+        }
     }
 
     /**
@@ -349,8 +353,10 @@ class Cart
      */
     public function clear()
     {
-        $this->_items = [];
-        $this->_cartModified();
+        if ($this->_items) {
+            $this->_items = [];
+            $this->_cartModified();
+        }
     }
 
     /**
