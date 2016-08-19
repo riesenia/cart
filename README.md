@@ -103,15 +103,21 @@ echo $cart->getTotal('product,service');
 echo $cart->getTotal('~product,service');
 ```
 
-### Getting weight (since 1.4)
+### Getting cart weight
 
-As of 1.4 item implementing *WeightedCartItemInterface* can be added to cart, so cart can count total weight.
-Weight can be counted by type using same format as for counting totals.
+Item implementing *WeightedCartItemInterface* can be added to cart, so cart can count total weight.
+Weight can be counted by type using the same format as for counting totals.
 
 ```php
 // get weight of type 'product'
 echo $cart->getWeight('product');
 ```
+
+### Bound cart items
+
+Item implementing *BoundCartItemInterface* can be added to cart. When the target item is removed from
+the cart, bound item is removed automatically too. If *updateCartQuantityAutomatically* method returns
+true, bound item also reflects quantity changes of target item.
 
 ## Tests
 
