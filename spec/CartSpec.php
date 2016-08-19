@@ -4,6 +4,7 @@ namespace spec\Riesenia\Cart;
 use PhpSpec\ObjectBehavior;
 use Riesenia\Cart\CartItemInterface;
 use Riesenia\Cart\WeightedCartItemInterface;
+use Riesenia\Cart\BoundCartItemInterface;
 
 class CartSpec extends ObjectBehavior
 {
@@ -169,5 +170,77 @@ class CartSpec extends ObjectBehavior
         $taxTotals = $this->getTaxTotals();
         $taxTotals[10]->__toString()->shouldReturn('2.20');
         $taxTotals[20]->__toString()->shouldReturn('1.00');
+    }
+
+    public function it_removes_bound_item(BoundCartItemInterface $item3, BoundCartItemInterface $item4)
+    {
+        // stub
+        $item3->getCartId()->willReturn('BOUND');
+        $item3->getCartType()->willReturn('bound item');
+        $item3->getCartQuantity()->willReturn(1);
+        $item3->getUnitPrice()->willReturn(1);
+        $item3->getTaxRate()->willReturn(0);
+        $item3->getBoundItemCartId()->willReturn('A');
+        $item3->updateCartQuantityAutomatically()->willReturn(false);
+
+        $item3->setCartQuantity(1)->shouldBeCalled();
+        $item3->setCartContext(null)->shouldBeCalled();
+
+        $this->addItem($item3);
+
+        // stub
+        $item4->getCartId()->willReturn('BOUND2');
+        $item4->getCartType()->willReturn('bound item 2');
+        $item4->getCartQuantity()->willReturn(1);
+        $item4->getUnitPrice()->willReturn(1);
+        $item4->getTaxRate()->willReturn(0);
+        $item4->getBoundItemCartId()->willReturn('A');
+        $item4->updateCartQuantityAutomatically()->willReturn(false);
+
+        $item4->setCartQuantity(1)->shouldBeCalled();
+        $item4->setCartContext(null)->shouldBeCalled();
+
+        $this->addItem($item4);
+
+        $this->removeItem('A');
+
+        $this->hasItem('BOUND')->shouldReturn(false);
+        $this->hasItem('BOUND2')->shouldReturn(false);
+    }
+
+    public function it_updates_bound_item_quantity_automatically($item, BoundCartItemInterface $item3, BoundCartItemInterface $item4)
+    {
+        // stub
+        $item3->getCartId()->willReturn('BOUND');
+        $item3->getCartType()->willReturn('bound item');
+        $item3->getCartQuantity()->willReturn(2);
+        $item3->getUnitPrice()->willReturn(1);
+        $item3->getTaxRate()->willReturn(0);
+        $item3->getBoundItemCartId()->willReturn('A');
+        $item3->updateCartQuantityAutomatically()->willReturn(true);
+
+        $item3->setCartQuantity(2)->shouldBeCalled();
+        $item3->setCartContext(null)->shouldBeCalled();
+
+        $this->addItem($item3);
+
+        // stub
+        $item4->getCartId()->willReturn('BOUND2');
+        $item4->getCartType()->willReturn('bound item 2');
+        $item4->getCartQuantity()->willReturn(1);
+        $item4->getUnitPrice()->willReturn(1);
+        $item4->getTaxRate()->willReturn(0);
+        $item4->getBoundItemCartId()->willReturn('A');
+        $item4->updateCartQuantityAutomatically()->willReturn(false);
+
+        $item4->setCartQuantity(1)->shouldBeCalled();
+        $item4->setCartContext(null)->shouldBeCalled();
+
+        $this->addItem($item4);
+
+        $item->setCartQuantity(7)->shouldBeCalled();
+        $item3->setCartQuantity(7)->shouldBeCalled();
+
+        $this->setItemQuantity('A', 7);
     }
 }

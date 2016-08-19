@@ -41,6 +41,13 @@ class Cart
     protected $_totals;
 
     /**
+     * Bindings
+     *
+     * @var array
+     */
+    protected $_bindings;
+
+    /**
      * Constructor
      *
      * @param mixed context data (passed to cart items for custom price logic)
@@ -228,10 +235,20 @@ class Cart
             $quantity += $this->_items[$item->getCartId()]->getCartQuantity();
         }
 
+        // bound item
+        if ($item instanceof BoundCartItemInterface) {
+            $this->_addBinding($item->getCartId(), $item->getBoundItemCartId());
+
+            // set quantity automatically
+            if ($item->updateCartQuantityAutomatically()) {
+                $quantity = $this->getItem($item->getBoundItemCartId())->getCartQuantity();
+            }
+        }
+
         $item->setCartQuantity($quantity);
         $item->setCartContext($this->_context);
-        $this->_items[$item->getCartId()] = $item;
 
+        $this->_items[$item->getCartId()] = $item;
         $this->_cartModified();
     }
 
@@ -270,6 +287,18 @@ class Cart
             throw new \OutOfBoundsException('Requested cart item does not exist.');
         }
 
+        // remove bound item
+        if (isset($this->_bindings[$cartId])) {
+            foreach ($this->_bindings[$cartId] as $boundCartId) {
+                $this->removeItem($boundCartId);
+            }
+        }
+
+        // remove binding
+        if ($this->getItem($cartId) instanceof BoundCartItemInterface) {
+            $this->_removeBinding($cartId, $this->getItem($cartId)->getBoundItemCartId());
+        }
+
         unset($this->_items[$cartId]);
         $this->_cartModified();
     }
@@ -290,15 +319,23 @@ class Cart
         $quantity = (int) $quantity;
 
         if ($quantity <= 0) {
-            $this->removeItem($cartId);
-
-            return;
+            return $this->removeItem($cartId);
         }
 
         $item = $this->getItem($cartId);
 
         if ($item->getCartQuantity() != $quantity) {
             $item->setCartQuantity($quantity);
+
+            // set bound item quantity
+            if (isset($this->_bindings[$cartId])) {
+                foreach ($this->_bindings[$cartId] as $boundCartId) {
+                    if ($this->getItem($boundCartId)->updateCartQuantityAutomatically()) {
+                        $this->getItem($boundCartId)->setCartQuantity($quantity);
+                    }
+                }
+            }
+
             $this->_cartModified();
         }
     }
@@ -550,5 +587,41 @@ class Cart
     protected function _cartModified()
     {
         $this->_totals = null;
+    }
+
+    /**
+     * Add binding
+     *
+     * @param mixed bound item id
+     * @param mixed target item id
+     * @return void
+     */
+    protected function _addBinding($boundCartId, $cartId)
+    {
+        if (!$this->hasItem($cartId)) {
+            throw new \OutOfBoundsException('Target cart item does not exist.');
+        }
+
+        if (!isset($this->_bindings[$cartId])) {
+            $this->_bindings[$cartId] = [];
+        }
+
+        $this->_bindings[$cartId][$boundCartId] = $boundCartId;
+    }
+
+    /**
+     * Remove binding
+     *
+     * @param mixed bound item id
+     * @param mixed target item id
+     * @return void
+     */
+    protected function _removeBinding($boundCartId, $cartId)
+    {
+        unset($this->_bindings[$cartId][$boundCartId]);
+
+        if (!count($this->_bindings[$cartId])) {
+            unset($this->_bindings[$cartId]);
+        }
     }
 }
