@@ -215,7 +215,7 @@ class Cart
      */
     public function getItem($cartId)
     {
-        if (!$this->hasItem($cartId)) {
+        if (!isset($this->_items[$cartId])) {
             throw new \OutOfBoundsException('Requested cart item does not exist.');
         }
 
