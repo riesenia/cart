@@ -137,7 +137,7 @@ class Cart
      */
     public function isEmpty()
     {
-        return !count($this->_items);
+        return !count($this->getItems());
     }
 
     /**
@@ -158,7 +158,7 @@ class Cart
      */
     public function countItems()
     {
-        return count($this->_items);
+        return count($this->getItems());
     }
 
     /**
@@ -205,7 +205,7 @@ class Cart
      */
     public function hasItem($cartId)
     {
-        return isset($this->_items[$cartId]);
+        return array_key_exists($cartId, $this->getItems());
     }
 
     /**
