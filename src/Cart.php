@@ -205,7 +205,7 @@ class Cart
      */
     public function hasItem($cartId)
     {
-        return array_key_exists($cartId, $this->getItems());
+        return isset($this->_items[$cartId]);
     }
 
     /**
@@ -215,7 +215,7 @@ class Cart
      */
     public function getItem($cartId)
     {
-        if (!isset($this->_items[$cartId])) {
+        if (!$this->hasItem($cartId)) {
             throw new \OutOfBoundsException('Requested cart item does not exist.');
         }
 
@@ -231,8 +231,8 @@ class Cart
      */
     public function addItem(CartItemInterface $item, $quantity = 1)
     {
-        if (isset($this->_items[$item->getCartId()])) {
-            $quantity += $this->_items[$item->getCartId()]->getCartQuantity();
+        if ($this->hasItem($item->getCartId())) {
+            $quantity += $this->getItem($item->getCartId())->getCartQuantity();
         }
 
         // bound item
