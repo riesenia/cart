@@ -345,13 +345,15 @@ class Cart
      *
      * @param CartItemInterface item
      * @param int quantity (null to use item quantity)
+     * @param bool count price with VAT (null to use cart default)
+     * @param int rounding decimals (null to use cart default)
      * @return \Litipk\BigNumbers\Decimal
      */
-    public function getItemPrice(CartItemInterface $item, $quantity = null)
+    public function getItemPrice(CartItemInterface $item, $quantity = null, $pricesWithVat = null, $roundingDecimals = null)
     {
         $item->setCartContext($this->_context);
 
-        return $this->countPrice($item->getUnitPrice(), $item->getTaxRate(), $quantity ?: $item->getCartQuantity());
+        return $this->countPrice($item->getUnitPrice(), $item->getTaxRate(), $quantity ?: $item->getCartQuantity(), $pricesWithVat, $roundingDecimals);
     }
 
     /**
