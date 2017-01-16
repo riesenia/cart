@@ -77,6 +77,16 @@ class Cart
     }
 
     /**
+     * Get context
+     *
+     * @return mixed context data
+     */
+    public function getContext()
+    {
+        return $this->_context;
+    }
+
+    /**
      * Set prices with VAT
      *
      * @param bool true if prices are listed as gross
@@ -92,9 +102,19 @@ class Cart
     }
 
     /**
+     * Get prices with VAT
+     *
+     * @return bool
+     */
+    public function getPricesWithVat()
+    {
+        return $this->_pricesWithVat;
+    }
+
+    /**
      * Set rounding decimals
      *
-     * @param bool true if prices are listed as gross
+     * @param int rounding decimals
      * @return void
      */
     public function setRoundingDecimals($roundingDecimals)
@@ -110,6 +130,16 @@ class Cart
         if ($this->_items) {
             $this->_cartModified();
         }
+    }
+
+    /**
+     * Get rounding decimals
+     *
+     * @return int
+     */
+    public function getRoundingDecimals()
+    {
+        return $this->_roundingDecimals;
     }
 
     /**
