@@ -119,6 +119,11 @@ Item implementing *BoundCartItemInterface* can be added to cart. When the target
 the cart, bound item is removed automatically too. If *updateCartQuantityAutomatically* method returns
 true, bound item also reflects quantity changes of target item.
 
+### Multiple bound cart items
+
+Item implementing *MultipleBoundCartItemInterface* can be added to cart. When any of target items is
+removed from the cart, bound item is removed automatically too.
+
 ## Tests
 
 You can run the unit tests with the following command:

@@ -275,6 +275,13 @@ class Cart
             }
         }
 
+        // multiple bound item
+        if ($item instanceof MultipleBoundCartItemInterface) {
+            foreach ($item->getBoundItemCartIds() as $bindingId) {
+                $this->_addBinding($item->getCartId(), $bindingId);
+            }
+        }
+
         $item->setCartQuantity($quantity);
         $item->setCartContext($this->_context);
 
@@ -327,6 +334,13 @@ class Cart
         // remove binding
         if ($this->getItem($cartId) instanceof BoundCartItemInterface) {
             $this->_removeBinding($cartId, $this->getItem($cartId)->getBoundItemCartId());
+        }
+
+        // remove multiple bindings
+        if ($this->getItem($cartId) instanceof MultipleBoundCartItemInterface) {
+            foreach ($this->getItem($cartId)->getBoundItemCartIds() as $bindingId) {
+                $this->_removeBinding($cartId, $bindingId);
+            }
         }
 
         unset($this->_items[$cartId]);

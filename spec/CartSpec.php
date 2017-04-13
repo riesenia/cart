@@ -5,6 +5,7 @@ use PhpSpec\ObjectBehavior;
 use Riesenia\Cart\CartItemInterface;
 use Riesenia\Cart\WeightedCartItemInterface;
 use Riesenia\Cart\BoundCartItemInterface;
+use Riesenia\Cart\MultipleBoundCartItemInterface;
 
 class CartSpec extends ObjectBehavior
 {
@@ -242,5 +243,25 @@ class CartSpec extends ObjectBehavior
         $item3->setCartQuantity(7)->shouldBeCalled();
 
         $this->setItemQuantity('A', 7);
+    }
+
+    public function it_removes_multiple_bound_item(MultipleBoundCartItemInterface $item3)
+    {
+        // stub
+        $item3->getCartId()->willReturn('BOUND');
+        $item3->getCartType()->willReturn('bound item');
+        $item3->getCartQuantity()->willReturn(1);
+        $item3->getUnitPrice()->willReturn(1);
+        $item3->getTaxRate()->willReturn(0);
+        $item3->getBoundItemCartIds()->willReturn(['A', 'B']);
+
+        $item3->setCartQuantity(1)->shouldBeCalled();
+        $item3->setCartContext(null)->shouldBeCalled();
+
+        $this->addItem($item3);
+
+        $this->removeItem('B');
+
+        $this->hasItem('BOUND')->shouldReturn(false);
     }
 }
