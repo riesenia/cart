@@ -245,7 +245,7 @@ class CartSpec extends ObjectBehavior
         $this->setItemQuantity('A', 7);
     }
 
-    public function it_removes_multiple_bound_item(MultipleBoundCartItemInterface $item3)
+    public function it_removes_multiple_bound_item($item, MultipleBoundCartItemInterface $item3)
     {
         // stub
         $item3->getCartId()->willReturn('BOUND');
@@ -259,6 +259,10 @@ class CartSpec extends ObjectBehavior
         $item3->setCartContext(null)->shouldBeCalled();
 
         $this->addItem($item3);
+
+        // check that updateCartQuantityAutomatically will not be called
+        $item->setCartQuantity(7)->shouldBeCalled();
+        $this->setItemQuantity('A', 7);
 
         $this->removeItem('B');
 

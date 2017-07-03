@@ -374,8 +374,10 @@ class Cart
             // set bound item quantity
             if (isset($this->_bindings[$cartId])) {
                 foreach ($this->_bindings[$cartId] as $boundCartId) {
-                    if ($this->getItem($boundCartId)->updateCartQuantityAutomatically()) {
-                        $this->getItem($boundCartId)->setCartQuantity($quantity);
+                    $item = $this->getItem($boundCartId);
+
+                    if ($item instanceof BoundCartItemInterface && $item->updateCartQuantityAutomatically()) {
+                        $item->setCartQuantity($quantity);
                     }
                 }
             }
