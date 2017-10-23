@@ -1,11 +1,12 @@
 <?php
 namespace spec\Riesenia\Cart;
 
+use Litipk\BigNumbers\Decimal;
 use PhpSpec\ObjectBehavior;
-use Riesenia\Cart\CartItemInterface;
-use Riesenia\Cart\WeightedCartItemInterface;
 use Riesenia\Cart\BoundCartItemInterface;
+use Riesenia\Cart\CartItemInterface;
 use Riesenia\Cart\MultipleBoundCartItemInterface;
+use Riesenia\Cart\WeightedCartItemInterface;
 
 class CartSpec extends ObjectBehavior
 {
@@ -36,14 +37,14 @@ class CartSpec extends ObjectBehavior
         $this->addItem($item2);
     }
 
-    public function it_can_add_items()
+    public function it_adds_items()
     {
         $this->countItems()->shouldReturn(2);
         $this->getItem('A')->getCartQuantity()->shouldReturn(2);
         $this->getItem('B')->getCartQuantity()->shouldReturn(1);
     }
 
-    public function it_can_set_items($item, $item2)
+    public function it_sets_items($item, $item2)
     {
         $items = [$item, $item2];
 
@@ -52,17 +53,17 @@ class CartSpec extends ObjectBehavior
 
         $this->setItems($items);
 
-        $this->getTotal()->__toString()->shouldReturn('4.29');
+        $this->getTotal()->equals(Decimal::fromFloat(4.29))->shouldReturn(true);
     }
 
-    public function it_can_change_item_quantity($item)
+    public function it_changes_item_quantity($item)
     {
         $item->setCartQuantity(7)->shouldBeCalled();
 
         $this->setItemQuantity('A', 7);
     }
 
-    public function it_can_remove_item()
+    public function it_removes_item()
     {
         $this->hasItem('A')->shouldReturn(true);
 
@@ -93,7 +94,7 @@ class CartSpec extends ObjectBehavior
         $this->isEmpty()->shouldReturn(true);
     }
 
-    public function it_can_get_items_by_type($item, $item2, CartItemInterface $item3, WeightedCartItemInterface $item4)
+    public function it_gets_items_by_type($item, $item2, CartItemInterface $item3, WeightedCartItemInterface $item4)
     {
         // stub
         $item3->getCartId()->willReturn('T');
@@ -111,10 +112,10 @@ class CartSpec extends ObjectBehavior
         $this->getItemsByType('product')->shouldReturn(['A' => $item, 'B' => $item2]);
         $this->getItemsByType('~test')->shouldReturn(['A' => $item, 'B' => $item2]);
 
-        $this->getTotal('product')->__toString()->shouldReturn('3.19');
-        $this->getTotal('test')->__toString()->shouldReturn('1.00');
-        $this->getTotal('product,nonexistent,test')->__toString()->shouldReturn('4.19');
-        $this->getTotal('~test')->__toString()->shouldReturn('3.19');
+        $this->getTotal('product')->equals(Decimal::fromFloat(3.19))->shouldReturn(true);
+        $this->getTotal('test')->equals(Decimal::fromInteger(1))->shouldReturn(true);
+        $this->getTotal('product,nonexistent,test')->equals(Decimal::fromFloat(4.19))->shouldReturn(true);
+        $this->getTotal('~test')->equals(Decimal::fromFloat(3.19))->shouldReturn(true);
 
         // stub
         $item4->getCartId()->willReturn('W');
@@ -129,48 +130,48 @@ class CartSpec extends ObjectBehavior
 
         $this->addItem($item4, 3);
 
-        $this->getWeight()->__toString()->shouldReturn('1.500000');
-        $this->getWeight('weighted')->__toString()->shouldReturn('1.500000');
-        $this->getWeight('weighted,nonexistent,test')->__toString()->shouldReturn('1.500000');
-        $this->getWeight('product,nonexistent,test')->__toString()->shouldReturn('0');
+        $this->getWeight()->equals(Decimal::fromFloat(1.5))->shouldReturn(true);
+        $this->getWeight('weighted')->equals(Decimal::fromFloat(1.5))->shouldReturn(true);
+        $this->getWeight('weighted,nonexistent,test')->equals(Decimal::fromFloat(1.5))->shouldReturn(true);
+        $this->getWeight('product,nonexistent,test')->isZero()->shouldReturn(true);
     }
 
     public function it_counts_totals_for_gross_prices_correctly()
     {
-        $this->getSubtotal()->__toString()->shouldReturn('2.82');
-        $this->getTotal()->__toString()->shouldReturn('3.19');
+        $this->getSubtotal()->equals(Decimal::fromFloat(2.82))->shouldReturn(true);
+        $this->getTotal()->equals(Decimal::fromFloat(3.19))->shouldReturn(true);
 
         $taxes = $this->getTaxes();
-        $taxes[10]->__toString()->shouldReturn('0.20');
-        $taxes[20]->__toString()->shouldReturn('0.17');
+        $taxes[10]->equals(Decimal::fromFloat(0.2))->shouldReturn(true);
+        $taxes[20]->equals(Decimal::fromFloat(0.17))->shouldReturn(true);
 
         $taxBases = $this->getTaxBases();
-        $taxBases[10]->__toString()->shouldReturn('2.00');
-        $taxBases[20]->__toString()->shouldReturn('0.82');
+        $taxBases[10]->equals(Decimal::fromInteger(2))->shouldReturn(true);
+        $taxBases[20]->equals(Decimal::fromFloat(0.82))->shouldReturn(true);
 
         $taxTotals = $this->getTaxTotals();
-        $taxTotals[10]->__toString()->shouldReturn('2.20');
-        $taxTotals[20]->__toString()->shouldReturn('0.99');
+        $taxTotals[10]->equals(Decimal::fromFloat(2.2))->shouldReturn(true);
+        $taxTotals[20]->equals(Decimal::fromFloat(0.99))->shouldReturn(true);
     }
 
     public function it_counts_totals_for_net_prices_correctly()
     {
         $this->setPricesWithVat(false);
 
-        $this->getSubtotal()->__toString()->shouldReturn('2.83');
-        $this->getTotal()->__toString()->shouldReturn('3.20');
+        $this->getSubtotal()->equals(Decimal::fromFloat(2.83))->shouldReturn(true);
+        $this->getTotal()->equals(Decimal::fromFloat(3.2))->shouldReturn(true);
 
         $taxes = $this->getTaxes();
-        $taxes[10]->__toString()->shouldReturn('0.20');
-        $taxes[20]->__toString()->shouldReturn('0.17');
+        $taxes[10]->equals(Decimal::fromFloat(0.2))->shouldReturn(true);
+        $taxes[20]->equals(Decimal::fromFloat(0.17))->shouldReturn(true);
 
         $taxBases = $this->getTaxBases();
-        $taxBases[10]->__toString()->shouldReturn('2.00');
-        $taxBases[20]->__toString()->shouldReturn('0.83');
+        $taxBases[10]->equals(Decimal::fromInteger(2))->shouldReturn(true);
+        $taxBases[20]->equals(Decimal::fromFloat(0.83))->shouldReturn(true);
 
         $taxTotals = $this->getTaxTotals();
-        $taxTotals[10]->__toString()->shouldReturn('2.20');
-        $taxTotals[20]->__toString()->shouldReturn('1.00');
+        $taxTotals[10]->equals(Decimal::fromFloat(2.2))->shouldReturn(true);
+        $taxTotals[20]->equals(Decimal::fromInteger(1))->shouldReturn(true);
     }
 
     public function it_removes_bound_item(BoundCartItemInterface $item3, BoundCartItemInterface $item4)
@@ -267,5 +268,38 @@ class CartSpec extends ObjectBehavior
         $this->removeItem('B');
 
         $this->hasItem('BOUND')->shouldReturn(false);
+    }
+
+    public function it_sorts_items_correctly($item, $item2, CartItemInterface $item3, CartItemInterface $item4)
+    {
+        // stub
+        $item3->getCartId()->willReturn('L');
+        $item3->getCartType()->willReturn('last');
+        $item3->getCartQuantity()->willReturn(1);
+        $item3->getUnitPrice()->willReturn(1);
+        $item3->getTaxRate()->willReturn(0);
+
+        $item3->setCartQuantity(1)->shouldBeCalled();
+        $item3->setCartContext(null)->shouldBeCalled();
+
+        $this->addItem($item3);
+
+        // stub
+        $item4->getCartId()->willReturn('F');
+        $item4->getCartType()->willReturn('first');
+        $item4->getCartQuantity()->willReturn(3);
+        $item4->getUnitPrice()->willReturn(1);
+        $item4->getTaxRate()->willReturn(0);
+
+        $item4->setCartQuantity(3)->shouldBeCalled();
+        $item4->setCartContext(null)->shouldBeCalled();
+
+        $this->addItem($item4, 3);
+
+        $this->getItems()->shouldReturn(['A' => $item, 'B' => $item2, 'L' => $item3, 'F' => $item4]);
+
+        $this->sortByType(['first', 'product', 'last']);
+
+        $this->getItems()->shouldReturn(['F' => $item4, 'A' => $item, 'B' => $item2, 'L' => $item3]);
     }
 }

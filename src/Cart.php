@@ -6,53 +6,53 @@ use Litipk\BigNumbers\Decimal;
 class Cart
 {
     /**
-     * Cart items
+     * Cart items.
      *
      * @var array
      */
     protected $_items = [];
 
     /**
-     * Context data
+     * Context data.
      *
      * @var mixed
      */
     protected $_context;
 
     /**
-     * If prices are listed as gross
+     * If prices are listed as gross.
      *
      * @var bool
      */
     protected $_pricesWithVat;
 
     /**
-     * Rounding decimals
+     * Rounding decimals.
      *
      * @var int
      */
     protected $_roundingDecimals;
 
     /**
-     * Totals
+     * Totals.
      *
      * @var array
      */
     protected $_totals;
 
     /**
-     * Bindings
+     * Bindings.
      *
      * @var array
      */
     protected $_bindings;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param mixed context data (passed to cart items for custom price logic)
-     * @param bool true if prices are listed as gross
-     * @param int number of decimals used for rounding
+     * @param mixed|null $context          data passed to cart items for custom price logic
+     * @param bool       $pricesWithVat    true if prices are listed as gross
+     * @param int        $roundingDecimals
      */
     public function __construct($context = null, $pricesWithVat = true, $roundingDecimals = 2)
     {
@@ -62,10 +62,9 @@ class Cart
     }
 
     /**
-     * Set context
+     * Set context.
      *
-     * @param mixed context data (passed to cart items for custom price logic)
-     * @return void
+     * @param mixed $context data passed to cart items for custom price logic
      */
     public function setContext($context)
     {
@@ -77,7 +76,7 @@ class Cart
     }
 
     /**
-     * Get context
+     * Get context.
      *
      * @return mixed context data
      */
@@ -87,10 +86,9 @@ class Cart
     }
 
     /**
-     * Set prices with VAT
+     * Set prices with VAT.
      *
-     * @param bool true if prices are listed as gross
-     * @return void
+     * @param bool $pricesWithVat true if prices are listed as gross
      */
     public function setPricesWithVat($pricesWithVat)
     {
@@ -102,7 +100,7 @@ class Cart
     }
 
     /**
-     * Get prices with VAT
+     * Get prices with VAT.
      *
      * @return bool
      */
@@ -112,10 +110,9 @@ class Cart
     }
 
     /**
-     * Set rounding decimals
+     * Set rounding decimals.
      *
-     * @param int rounding decimals
-     * @return void
+     * @param int $roundingDecimals
      */
     public function setRoundingDecimals($roundingDecimals)
     {
@@ -133,7 +130,7 @@ class Cart
     }
 
     /**
-     * Get rounding decimals
+     * Get rounding decimals.
      *
      * @return int
      */
@@ -143,10 +140,9 @@ class Cart
     }
 
     /**
-     * Set sorting by type
+     * Set sorting by type.
      *
-     * @param array
-     * @return void
+     * @param array $sorting
      */
     public function sortByType($sorting)
     {
@@ -156,12 +152,12 @@ class Cart
             $aSort = isset($sorting[$a->getCartType()]) ? $sorting[$a->getCartType()] : 1000;
             $bSort = isset($sorting[$b->getCartType()]) ? $sorting[$b->getCartType()] : 1000;
 
-            return ($aSort < $bSort) ? -1 : 1;
+            return $aSort <=> $bSort;
         });
     }
 
     /**
-     * Check if cart is empty
+     * Check if cart is empty.
      *
      * @return bool
      */
@@ -171,9 +167,10 @@ class Cart
     }
 
     /**
-     * Check if cart is empty by tyoe
+     * Check if cart is empty by tyoe.
      *
-     * @param string type
+     * @param string $type
+     *
      * @return bool
      */
     public function isEmptyByType($type)
@@ -182,7 +179,7 @@ class Cart
     }
 
     /**
-     * Get items count
+     * Get items count.
      *
      * @return int
      */
@@ -192,9 +189,10 @@ class Cart
     }
 
     /**
-     * Get items count by type
+     * Get items count by type.
      *
-     * @param string type
+     * @param string $type
+     *
      * @return int
      */
     public function countItemsByType($type)
@@ -203,9 +201,10 @@ class Cart
     }
 
     /**
-     * Get items
+     * Get items.
      *
-     * @param null|callable filter
+     * @param callable|null $filter
+     *
      * @return array
      */
     public function getItems($filter = null)
@@ -218,9 +217,10 @@ class Cart
     }
 
     /**
-     * Get items by type
+     * Get items by type.
      *
-     * @param string type
+     * @param string $type
+     *
      * @return array
      */
     public function getItemsByType($type)
@@ -229,7 +229,9 @@ class Cart
     }
 
     /**
-     * Check if cart has item with id
+     * Check if cart has item with id.
+     *
+     * @param mixed $cartId
      *
      * @return bool
      */
@@ -239,7 +241,9 @@ class Cart
     }
 
     /**
-     * Get item by cart id
+     * Get item by cart id.
+     *
+     * @param mixed $cartId
      *
      * @return CartItemInterface
      */
@@ -253,11 +257,10 @@ class Cart
     }
 
     /**
-     * Add item to cart
+     * Add item to cart.
      *
-     * @param CartItemInterface item
-     * @param int quantity
-     * @return void
+     * @param CartItemInterface $item
+     * @param int               $quantity
      */
     public function addItem(CartItemInterface $item, $quantity = 1)
     {
@@ -290,10 +293,9 @@ class Cart
     }
 
     /**
-     * Set cart items
+     * Set cart items.
      *
-     * @param array|Traversable items
-     * @return void
+     * @param array|Traversable $items
      */
     public function setItems($items)
     {
@@ -313,10 +315,9 @@ class Cart
     }
 
     /**
-     * Remove item by cart id
+     * Remove item by cart id.
      *
-     * @param mixed cart id
-     * @return void
+     * @param mixed $cartId
      */
     public function removeItem($cartId)
     {
@@ -348,11 +349,10 @@ class Cart
     }
 
     /**
-     * Set item quantity by cart id
+     * Set item quantity by cart id.
      *
-     * @param mixed cart id
-     * @param int quantity
-     * @return void
+     * @param mixed $cartId
+     * @param int   $quantity
      */
     public function setItemQuantity($cartId, $quantity)
     {
@@ -387,13 +387,14 @@ class Cart
     }
 
     /**
-     * Get item price (with or without VAT based on _pricesWithVat setting)
+     * Get item price (with or without VAT based on _pricesWithVat setting).
      *
-     * @param CartItemInterface item
-     * @param int quantity (null to use item quantity)
-     * @param bool count price with VAT (null to use cart default)
-     * @param int rounding decimals (null to use cart default)
-     * @return \Litipk\BigNumbers\Decimal
+     * @param CartItemInterface $item
+     * @param int|null          $quantity         null to use item quantity
+     * @param bool|null         $pricesWithVat    null to use cart default
+     * @param int|null          $roundingDecimals null to use cart default
+     *
+     * @return Decimal
      */
     public function getItemPrice(CartItemInterface $item, $quantity = null, $pricesWithVat = null, $roundingDecimals = null)
     {
@@ -403,22 +404,23 @@ class Cart
     }
 
     /**
-     * Count price
+     * Count price.
      *
-     * @param float unit price (without VAT)
-     * @param float tax rate
-     * @param int quantity
-     * @param bool count price with VAT (null to use cart default)
-     * @param int rounding decimals (null to use cart default)
-     * @return \Litipk\BigNumbers\Decimal
+     * @param float     $unitPrice        unit price without VAT
+     * @param float     $taxRate
+     * @param int       $quantity
+     * @param bool|null $pricesWithVat    null to use cart default
+     * @param int|null  $roundingDecimals null to use cart default
+     *
+     * @return Decimal
      */
     public function countPrice($unitPrice, $taxRate, $quantity = 1, $pricesWithVat = null, $roundingDecimals = null)
     {
-        if (is_null($pricesWithVat)) {
+        if ($pricesWithVat === null) {
             $pricesWithVat = $this->_pricesWithVat;
         }
 
-        if (is_null($roundingDecimals)) {
+        if ($roundingDecimals === null) {
             $roundingDecimals = $this->_roundingDecimals;
         }
 
@@ -432,9 +434,7 @@ class Cart
     }
 
     /**
-     * Clear cart contents
-     *
-     * @return void
+     * Clear cart contents.
      */
     public function clear()
     {
@@ -445,10 +445,11 @@ class Cart
     }
 
     /**
-     * Get totals using filter
+     * Get totals using filter.
      * If filter is string, uses _getTypeCondition to build filter function.
      *
-     * @param mixed filter
+     * @param callable|string $filter
+     *
      * @return array
      */
     public function getTotals($filter = '~')
@@ -479,10 +480,11 @@ class Cart
     }
 
     /**
-     * Get subtotal
+     * Get subtotal.
      *
-     * @param string type
-     * @return \Litipk\BigNumbers\Decimal
+     * @param callable|string $type
+     *
+     * @return Decimal
      */
     public function getSubtotal($type = '~')
     {
@@ -496,10 +498,11 @@ class Cart
     }
 
     /**
-     * Get total
+     * Get total.
      *
-     * @param string type
-     * @return \Litipk\BigNumbers\Decimal
+     * @param callable|string $type
+     *
+     * @return Decimal
      */
     public function getTotal($type = '~')
     {
@@ -513,9 +516,10 @@ class Cart
     }
 
     /**
-     * Get taxes
+     * Get taxes.
      *
-     * @param string type
+     * @param callable|string $type
+     *
      * @return array
      */
     public function getTaxes($type = '~')
@@ -524,9 +528,10 @@ class Cart
     }
 
     /**
-     * Get tax bases
+     * Get tax bases.
      *
-     * @param string type
+     * @param callable|string $type
+     *
      * @return array
      */
     public function getTaxBases($type = '~')
@@ -535,9 +540,10 @@ class Cart
     }
 
     /**
-     * Get tax totals
+     * Get tax totals.
      *
-     * @param string type
+     * @param callable|string $type
+     *
      * @return array
      */
     public function getTaxTotals($type = '~')
@@ -546,10 +552,11 @@ class Cart
     }
 
     /**
-     * Get weight
+     * Get weight.
      *
-     * @param string type
-     * @return \Litipk\BigNumbers\Decimal
+     * @param callable|string $type
+     *
+     * @return Decimal
      */
     public function getWeight($type = '~')
     {
@@ -557,9 +564,10 @@ class Cart
     }
 
     /**
-     * Calculate totals
+     * Calculate totals.
      *
-     * @param callable filter
+     * @param callable $filter
+     *
      * @return array
      */
     protected function _calculateTotals($filter)
@@ -606,9 +614,10 @@ class Cart
     }
 
     /**
-     * Build condition for item type
+     * Build condition for item type.
      *
-     * @param string item type
+     * @param string $type
+     *
      * @return Closure
      */
     protected function _getTypeCondition($type)
@@ -622,15 +631,13 @@ class Cart
 
         $type = explode(',', $type);
 
-        return Function (CartItemInterface $item) use ($type, $negative) {
+        return function (CartItemInterface $item) use ($type, $negative) {
             return $negative ? !in_array($item->getCartType(), $type) : in_array($item->getCartType(), $type);
         };
     }
 
     /**
-     * Clear cached totals
-     *
-     * @return void
+     * Clear cached totals.
      */
     protected function _cartModified()
     {
@@ -638,11 +645,10 @@ class Cart
     }
 
     /**
-     * Add binding
+     * Add binding.
      *
-     * @param mixed bound item id
-     * @param mixed target item id
-     * @return void
+     * @param mixed $boundCartId bound item id
+     * @param mixed $cartId      target item id
      */
     protected function _addBinding($boundCartId, $cartId)
     {
@@ -658,11 +664,10 @@ class Cart
     }
 
     /**
-     * Remove binding
+     * Remove binding.
      *
-     * @param mixed bound item id
-     * @param mixed target item id
-     * @return void
+     * @param mixed $boundCartId bound item id
+     * @param mixed $cartId      target item id
      */
     protected function _removeBinding($boundCartId, $cartId)
     {

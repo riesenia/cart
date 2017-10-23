@@ -1,0 +1,9 @@
+<?php
+
+$config = new Rshop\CS\Config\Rshop();
+
+$config->getFinder()
+    ->in(__DIR__)
+    ->exclude('vendor');
+
+return $config;
