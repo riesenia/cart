@@ -16,10 +16,12 @@ Or add to your *composer.json* file as a requirement:
 ```json
 {
     "require": {
-        "riesenia/cart": "~1.0"
+        "riesenia/cart": "~2.0"
     }
 }
 ```
+
+*Note: if you use PHP 5.4 - 5.6 use 1.\* version of this library.*
 
 ## Usage
 
@@ -46,27 +48,39 @@ $cart->setRoundingDecimals(4);
 Items can be accessed by their cart id (provided by *getCartId* method).
 
 ```php
-// adding item to cart ($product class has to implement CartItemInterface)
+// adding item to cart ($product has to implement CartItemInterface)
 $cart->addItem($product);
 
-// set quantity of the item
+// set quantity of the item when adding to cart
 $cart->addItem($anotherProduct, 3);
 
 // when $product->getCartId() returns i.e. 'abc'
 $cart->setItemQuantity('abc', 7);
 
-// removing item
+// remove item
 $cart->removeItem('abc');
 ```
 
 ### Batch cart items manipulation
 
 Cart can be cleared using *clear()* method. Items can be set using *setItems()* method. Please note
-that *setItems* will call *clear*. All items have to implement *CartItemInterface*.
+that *setItems* will call *clear* first. All added items have to implement *CartItemInterface*.
+
+### Counting item price
+
+You can get price of an item using *getItemPrice* method. It sets the cart context before counting the price, but you can modify params to get i.e. price without VAT.
+
+```php
+$cart = new Cart();
+$cart->addItem($product, 3);
+
+// get unit price without VAT
+echo $cart->getItemPrice($product, 1, false);
+```
 
 ### Getting items
 
-Items can be fetched using *getItems* or by type using *getItemsByType*.
+Items can be fetched using *getItems* (accepts *callable* to filter results) or by type using *getItemsByType*.
 
 ### Getting totals
 
