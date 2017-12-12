@@ -181,11 +181,13 @@ class Cart
     /**
      * Get items count.
      *
+     * @param callable|null $filter
+     *
      * @return int
      */
-    public function countItems()
+    public function countItems($filter = null)
     {
-        return count($this->getItems());
+        return count($this->getItems($filter));
     }
 
     /**
@@ -197,7 +199,7 @@ class Cart
      */
     public function countItemsByType($type)
     {
-        return count($this->getItemsByType($type));
+        return $this->countItems($this->_getTypeCondition($type));
     }
 
     /**
