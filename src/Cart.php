@@ -55,6 +55,13 @@ class Cart
     protected $_bindings;
 
     /**
+     * Active _cartModified callback.
+     *
+     * @var bool
+     */
+    protected $_cartModifiedCallback = true;
+
+    /**
      * Constructor.
      *
      * @param mixed|null $context          data passed to cart items for custom price logic
@@ -332,6 +339,7 @@ class Cart
             throw new \InvalidArgumentException('Only an array or Traversable is allowed for setItems.');
         }
 
+        $this->_cartModifiedCallback = false;
         $this->clear();
 
         foreach ($items as $item) {
@@ -341,6 +349,9 @@ class Cart
 
             $this->addItem($item, $item->getCartQuantity());
         }
+
+        $this->_cartModifiedCallback = true;
+        $this->_cartModified();
     }
 
     /**
@@ -670,9 +681,14 @@ class Cart
      */
     protected function _cartModified()
     {
-        $this->_totals = null;
+        if (!$this->_cartModifiedCallback) {
+            return;
+        }
 
+        $this->_totals = null;
+        $this->_cartModifiedCallback = false;
         $this->_processPromotions();
+        $this->_cartModifiedCallback = true;
     }
 
     /**
