@@ -26,14 +26,15 @@ Or add to your *composer.json* file as a requirement:
 ## Usage
 
 Constructor takes three configuration parameters:
- * context data that are passed to each added cart item (you can pass i.e. customer id to resolve custom price)
- * true when listing gross prices, false for net prices (see [nice explanation](http://makandracards.com/makandra/1505-invoices-how-to-properly-round-and-calculate-totals))
- * number of decimals for rounding
+
+* context data that are passed to each added cart item (you can pass i.e. customer id to resolve custom price)
+* true when listing gross prices, false for net prices (see [nice explanation](http://makandracards.com/makandra/1505-invoices-how-to-properly-round-and-calculate-totals))
+* number of decimals for rounding
 
 All of them can be set separately.
 
 ```php
-use Riesenia\Cart\Cart; 
+use Riesenia\Cart\Cart;
 
 // default is (null, true, 2)
 $cart = new Cart();
@@ -43,7 +44,7 @@ $cart->setPricesWithVat(false);
 $cart->setRoundingDecimals(4);
 ```
 
-### Manipulating cart items
+## Manipulating cart items
 
 Items can be accessed by their cart id (provided by *getCartId* method).
 
@@ -63,29 +64,15 @@ $cart->removeItem('abc');
 
 ### Batch cart items manipulation
 
-Cart can be cleared using *clear()* method. Items can be set using *setItems()* method. Please note
-that *setItems* will call *clear* first. All added items have to implement *CartItemInterface*.
-
-### Counting item price
-
-You can get price of an item using *getItemPrice* method. It sets the cart context before counting the price, but you can modify params to get i.e. price without VAT.
-
-```php
-$cart = new Cart();
-$cart->addItem($product, 3);
-
-// get unit price without VAT
-echo $cart->getItemPrice($product, 1, false);
-```
+Cart can be cleared using *clear()* method. Items can be set using *setItems()* method. Please note that *setItems* will call *clear* first. All added items have to implement *CartItemInterface*.
 
 ### Getting items
 
 Items can be fetched using *getItems* (accepts *callable* to filter results) or by type using *getItemsByType*.
 
-### Getting totals
+## Counting totals
 
-Cart works with *Decimal* class (see [litipk/php-bignumbers](https://github.com/Litipk/php-bignumbers/wiki/Decimal)).
-You can access subtotal (without VAT), taxes (array of amounts for all rates) and total (subtotal + taxes).
+Cart works with *Decimal* class (see [litipk/php-bignumbers](https://github.com/Litipk/php-bignumbers/wiki/Decimal)). You can access subtotal (without VAT), taxes (array of amounts for all rates) and total (subtotal + taxes).
 
 ```php
 // item 1 [price: 1.00, tax rate: 10]
@@ -117,31 +104,45 @@ echo $cart->getTotal('product,service');
 echo $cart->getTotal('~product,service');
 ```
 
+### Counting item price
+
+You can get price of an item using *getItemPrice* method. It sets the cart context before counting the price, but you can modify params to get i.e. price without VAT.
+
+```php
+$cart = new Cart();
+$cart->addItem($product, 3);
+
+// get unit price without VAT
+echo $cart->getItemPrice($product, 1, false);
+```
+
 ### Getting cart weight
 
-Item implementing *WeightedCartItemInterface* can be added to cart, so cart can count total weight.
-Weight can be counted by type using the same format as for counting totals.
+Item implementing *WeightedCartItemInterface* can be added to cart, so cart can count total weight. Weight can be counted by type using the same format as for counting totals.
 
 ```php
 // get weight of type 'product'
 echo $cart->getWeight('product');
 ```
 
-### Bound cart items
+## Bound cart items
 
-Item implementing *BoundCartItemInterface* can be added to cart. When the target item is removed from
-the cart, bound item is removed automatically too. If *updateCartQuantityAutomatically* method returns
-true, bound item also reflects quantity changes of target item.
+Item implementing *BoundCartItemInterface* can be added to cart. When the target item is removed from the cart, bound item is removed automatically too. If *updateCartQuantityAutomatically* method returns true, bound item also reflects quantity changes of target item.
 
 ### Multiple bound cart items
 
-Item implementing *MultipleBoundCartItemInterface* can be added to cart. When any of target items is
-removed from the cart, bound item is removed automatically too.
+Item implementing *MultipleBoundCartItemInterface* can be added to cart. When any of target items is removed from the cart, bound item is removed automatically too.
+
+## Promotions
+
+You can set promotions using *setPromotions* method. Each promotion has to implement *PromotionInterface*. Please note that *beforeApply* and *afterApply* callbacks will be called always even if promotion is not eligible. Method *apply* will be called only if promotion passes *isEligible* test.
 
 ## Tests
 
 You can run the unit tests with the following command:
 
-    $ cd path/to/riesenia/cart
-    $ composer install
-    $ vendor/bin/phpspec run
+```bash
+cd path/to/riesenia/cart
+composer install
+vendor/bin/phpspec run
+```

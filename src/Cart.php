@@ -13,6 +13,13 @@ class Cart
     protected $_items = [];
 
     /**
+     * Cart promotions.
+     *
+     * @var array
+     */
+    protected $_promotions = [];
+
+    /**
      * Context data.
      *
      * @var mixed
@@ -137,6 +144,26 @@ class Cart
     public function getRoundingDecimals()
     {
         return $this->_roundingDecimals;
+    }
+
+    /**
+     * Set promotions.
+     *
+     * @param array $promotions
+     */
+    public function setPromotions(array $promotions)
+    {
+        $this->_promotions = $promotions;
+    }
+
+    /**
+     * Get promotions.
+     *
+     * @return array
+     */
+    public function getPromotions()
+    {
+        return $this->_promotions;
     }
 
     /**
@@ -644,6 +671,33 @@ class Cart
     protected function _cartModified()
     {
         $this->_totals = null;
+
+        $this->_processPromotions();
+    }
+
+    /**
+     * Process promotions.
+     */
+    protected function _processPromotions()
+    {
+        $promotions = $this->getPromotions();
+
+        // before apply
+        foreach ($promotions as $promotion) {
+            $promotion->beforeApply($this);
+        }
+
+        // apply
+        foreach ($promotions as $promotion) {
+            if ($promotion->isEligible($this)) {
+                $promotion->apply($this);
+            }
+        }
+
+        // after apply
+        foreach ($promotions as $promotion) {
+            $promotion->afterApply($this);
+        }
     }
 
     /**

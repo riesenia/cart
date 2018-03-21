@@ -6,6 +6,7 @@ use PhpSpec\ObjectBehavior;
 use Riesenia\Cart\BoundCartItemInterface;
 use Riesenia\Cart\CartItemInterface;
 use Riesenia\Cart\MultipleBoundCartItemInterface;
+use Riesenia\Cart\PromotionInterface;
 use Riesenia\Cart\WeightedCartItemInterface;
 
 class CartSpec extends ObjectBehavior
@@ -172,6 +173,25 @@ class CartSpec extends ObjectBehavior
         $taxTotals = $this->getTaxTotals();
         $taxTotals[10]->equals(Decimal::fromFloat(2.2))->shouldReturn(true);
         $taxTotals[20]->equals(Decimal::fromInteger(1))->shouldReturn(true);
+    }
+
+    public function it_handles_promotions(PromotionInterface $promotion1, PromotionInterface $promotion2)
+    {
+        // stub
+        $promotion1->isEligible($this)->willReturn(true);
+
+        // stub
+        $promotion2->isEligible($this)->willReturn(false);
+
+        $promotion1->beforeApply($this)->shouldBeCalled();
+        $promotion2->beforeApply($this)->shouldBeCalled();
+        $promotion1->isEligible($this)->shouldBeCalled();
+        $promotion2->isEligible($this)->shouldBeCalled();
+        $promotion1->apply($this)->shouldBeCalled();
+        $promotion1->afterApply($this)->shouldBeCalled();
+        $promotion2->afterApply($this)->shouldBeCalled();
+
+        $this->setPromotions([$promotion1, $promotion2]);
     }
 
     public function it_removes_bound_item(BoundCartItemInterface $item3, BoundCartItemInterface $item4)
