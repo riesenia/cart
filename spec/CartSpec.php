@@ -192,6 +192,7 @@ class CartSpec extends ObjectBehavior
         $promotion2->afterApply($this)->shouldBeCalled();
 
         $this->setPromotions([$promotion1, $promotion2]);
+        $this->removeItem('A');
     }
 
     public function it_removes_bound_item(BoundCartItemInterface $item3, BoundCartItemInterface $item4)
