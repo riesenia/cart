@@ -1,4 +1,13 @@
 <?php
+/**
+ * This file is part of riesenia/cart package.
+ *
+ * Licensed under the MIT License
+ * (c) RIESENIA.com
+ */
+
+declare(strict_types=1);
+
 namespace spec\Riesenia\Cart;
 
 use Litipk\BigNumbers\Decimal;
@@ -21,7 +30,7 @@ class CartSpec extends ObjectBehavior
         $item->getTaxRate()->willReturn(10);
 
         $item->setCartQuantity(2)->shouldBeCalled();
-        $item->setCartContext(null)->shouldBeCalled();
+        $item->setCartContext([])->shouldBeCalled();
 
         $this->addItem($item, 2);
 
@@ -33,7 +42,7 @@ class CartSpec extends ObjectBehavior
         $item2->getTaxRate()->willReturn(20);
 
         $item2->setCartQuantity(1)->shouldBeCalled();
-        $item2->setCartContext(null)->shouldBeCalled();
+        $item2->setCartContext([])->shouldBeCalled();
 
         $this->addItem($item2);
     }
@@ -81,7 +90,7 @@ class CartSpec extends ObjectBehavior
 
         $item->getCartQuantity()->shouldBeCalled();
         $item3->setCartQuantity(4)->shouldBeCalled();
-        $item3->setCartContext(null)->shouldBeCalled();
+        $item3->setCartContext([])->shouldBeCalled();
 
         $this->addItem($item3, 2);
     }
@@ -105,7 +114,7 @@ class CartSpec extends ObjectBehavior
         $item3->getTaxRate()->willReturn(0);
 
         $item3->setCartQuantity(1)->shouldBeCalled();
-        $item3->setCartContext(null)->shouldBeCalled();
+        $item3->setCartContext([])->shouldBeCalled();
 
         $this->addItem($item3);
 
@@ -127,7 +136,7 @@ class CartSpec extends ObjectBehavior
         $item4->getWeight()->willReturn(0.5);
 
         $item4->setCartQuantity(3)->shouldBeCalled();
-        $item4->setCartContext(null)->shouldBeCalled();
+        $item4->setCartContext([])->shouldBeCalled();
 
         $this->addItem($item4, 3);
 
@@ -207,7 +216,7 @@ class CartSpec extends ObjectBehavior
         $item3->updateCartQuantityAutomatically()->willReturn(false);
 
         $item3->setCartQuantity(1)->shouldBeCalled();
-        $item3->setCartContext(null)->shouldBeCalled();
+        $item3->setCartContext([])->shouldBeCalled();
 
         $this->addItem($item3);
 
@@ -221,7 +230,7 @@ class CartSpec extends ObjectBehavior
         $item4->updateCartQuantityAutomatically()->willReturn(false);
 
         $item4->setCartQuantity(1)->shouldBeCalled();
-        $item4->setCartContext(null)->shouldBeCalled();
+        $item4->setCartContext([])->shouldBeCalled();
 
         $this->addItem($item4);
 
@@ -243,7 +252,7 @@ class CartSpec extends ObjectBehavior
         $item3->updateCartQuantityAutomatically()->willReturn(true);
 
         $item3->setCartQuantity(2)->shouldBeCalled();
-        $item3->setCartContext(null)->shouldBeCalled();
+        $item3->setCartContext([])->shouldBeCalled();
 
         $this->addItem($item3);
 
@@ -257,7 +266,7 @@ class CartSpec extends ObjectBehavior
         $item4->updateCartQuantityAutomatically()->willReturn(false);
 
         $item4->setCartQuantity(1)->shouldBeCalled();
-        $item4->setCartContext(null)->shouldBeCalled();
+        $item4->setCartContext([])->shouldBeCalled();
 
         $this->addItem($item4);
 
@@ -278,7 +287,7 @@ class CartSpec extends ObjectBehavior
         $item3->getBoundItemCartIds()->willReturn(['A', 'B']);
 
         $item3->setCartQuantity(1)->shouldBeCalled();
-        $item3->setCartContext(null)->shouldBeCalled();
+        $item3->setCartContext([])->shouldBeCalled();
 
         $this->addItem($item3);
 
@@ -301,7 +310,7 @@ class CartSpec extends ObjectBehavior
         $item3->getTaxRate()->willReturn(0);
 
         $item3->setCartQuantity(1)->shouldBeCalled();
-        $item3->setCartContext(null)->shouldBeCalled();
+        $item3->setCartContext([])->shouldBeCalled();
 
         $this->addItem($item3);
 
@@ -313,7 +322,7 @@ class CartSpec extends ObjectBehavior
         $item4->getTaxRate()->willReturn(0);
 
         $item4->setCartQuantity(3)->shouldBeCalled();
-        $item4->setCartContext(null)->shouldBeCalled();
+        $item4->setCartContext([])->shouldBeCalled();
 
         $this->addItem($item4, 3);
 

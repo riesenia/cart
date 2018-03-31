@@ -1,4 +1,13 @@
 <?php
+/**
+ * This file is part of riesenia/cart package.
+ *
+ * Licensed under the MIT License
+ * (c) RIESENIA.com
+ */
+
+declare(strict_types=1);
+
 namespace Riesenia\Cart;
 
 /**
@@ -15,7 +24,7 @@ interface PromotionInterface
      *
      * @return bool
      */
-    public function isEligible(Cart $cart);
+    public function isEligible(Cart $cart): bool;
 
     /**
      * Before apply callback.

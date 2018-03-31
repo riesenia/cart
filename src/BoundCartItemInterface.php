@@ -1,4 +1,13 @@
 <?php
+/**
+ * This file is part of riesenia/cart package.
+ *
+ * Licensed under the MIT License
+ * (c) RIESENIA.com
+ */
+
+declare(strict_types=1);
+
 namespace Riesenia\Cart;
 
 /**
@@ -11,14 +20,14 @@ interface BoundCartItemInterface extends CartItemInterface
     /**
      * Get bound item cart id.
      *
-     * @return mixed
+     * @return string
      */
-    public function getBoundItemCartId();
+    public function getBoundItemCartId(): string;
 
     /**
      * Update quantity automatically.
      *
      * @return bool
      */
-    public function updateCartQuantityAutomatically();
+    public function updateCartQuantityAutomatically(): bool;
 }

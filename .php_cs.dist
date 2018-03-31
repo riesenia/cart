@@ -1,8 +1,13 @@
 <?php
+$header = 'This file is part of riesenia/cart package.
 
-$config = new Rshop\CS\Config\Rshop();
+Licensed under the MIT License
+(c) RIESENIA.com';
 
-$config->getFinder()
+$config = new Rshop\CS\Config\Rshop($header);
+
+$config->setStrict()
+    ->getFinder()
     ->in(__DIR__)
     ->exclude('vendor');
 

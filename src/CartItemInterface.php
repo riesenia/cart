@@ -1,4 +1,13 @@
 <?php
+/**
+ * This file is part of riesenia/cart package.
+ *
+ * Licensed under the MIT License
+ * (c) RIESENIA.com
+ */
+
+declare(strict_types=1);
+
 namespace Riesenia\Cart;
 
 /**
@@ -11,56 +20,56 @@ interface CartItemInterface
     /**
      * Get item identifier.
      *
-     * @return mixed
+     * @return string
      */
-    public function getCartId();
+    public function getCartId(): string;
 
     /**
      * Get type of the item.
      *
      * @return string
      */
-    public function getCartType();
+    public function getCartType(): string;
 
     /**
      * Get name of the item.
      *
      * @return string
      */
-    public function getCartName();
+    public function getCartName(): string;
 
     /**
      * Set cart context.
      *
-     * @param mixed $context
+     * @param array $context
      */
-    public function setCartContext($context);
+    public function setCartContext(array $context);
 
     /**
      * Set cart quantity.
      *
      * @param int $quantity
      */
-    public function setCartQuantity($quantity);
+    public function setCartQuantity(int $quantity);
 
     /**
      * Get cart quantity.
      *
      * @return int
      */
-    public function getCartQuantity();
+    public function getCartQuantity(): int;
 
     /**
      * Get unit price based on quantity and context.
      *
      * @return float
      */
-    public function getUnitPrice();
+    public function getUnitPrice(): float;
 
     /**
      * Get tax rate percentage.
      *
      * @return float
      */
-    public function getTaxRate();
+    public function getTaxRate(): float;
 }

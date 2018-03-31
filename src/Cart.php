@@ -1,4 +1,13 @@
 <?php
+/**
+ * This file is part of riesenia/cart package.
+ *
+ * Licensed under the MIT License
+ * (c) RIESENIA.com
+ */
+
+declare(strict_types=1);
+
 namespace Riesenia\Cart;
 
 use Litipk\BigNumbers\Decimal;
@@ -8,23 +17,23 @@ class Cart
     /**
      * Cart items.
      *
-     * @var array
+     * @var CartItemInterface[]
      */
     protected $_items = [];
 
     /**
      * Cart promotions.
      *
-     * @var array
+     * @var PromotionInterface[]
      */
     protected $_promotions = [];
 
     /**
      * Context data.
      *
-     * @var mixed
+     * @var array
      */
-    protected $_context;
+    protected $_context = [];
 
     /**
      * If prices are listed as gross.
@@ -64,11 +73,11 @@ class Cart
     /**
      * Constructor.
      *
-     * @param mixed|null $context          data passed to cart items for custom price logic
-     * @param bool       $pricesWithVat    true if prices are listed as gross
-     * @param int        $roundingDecimals
+     * @param array $context          data passed to cart items for custom price logic
+     * @param bool  $pricesWithVat    true if prices are listed as gross
+     * @param int   $roundingDecimals
      */
-    public function __construct($context = null, $pricesWithVat = true, $roundingDecimals = 2)
+    public function __construct(array $context = [], bool $pricesWithVat = true, int $roundingDecimals = 2)
     {
         $this->setContext($context);
         $this->setPricesWithVat($pricesWithVat);
@@ -78,9 +87,9 @@ class Cart
     /**
      * Set context.
      *
-     * @param mixed $context data passed to cart items for custom price logic
+     * @param array $context data passed to cart items for custom price logic
      */
-    public function setContext($context)
+    public function setContext(array $context)
     {
         $this->_context = $context;
 
@@ -92,9 +101,9 @@ class Cart
     /**
      * Get context.
      *
-     * @return mixed context data
+     * @return array context data
      */
-    public function getContext()
+    public function getContext(): array
     {
         return $this->_context;
     }
@@ -104,9 +113,9 @@ class Cart
      *
      * @param bool $pricesWithVat true if prices are listed as gross
      */
-    public function setPricesWithVat($pricesWithVat)
+    public function setPricesWithVat(bool $pricesWithVat)
     {
-        $this->_pricesWithVat = (bool) $pricesWithVat;
+        $this->_pricesWithVat = $pricesWithVat;
 
         if ($this->_items) {
             $this->_cartModified();
@@ -116,9 +125,9 @@ class Cart
     /**
      * Get prices with VAT.
      *
-     * @return bool
+     * @return bool true if prices are listed as gross
      */
-    public function getPricesWithVat()
+    public function getPricesWithVat(): bool
     {
         return $this->_pricesWithVat;
     }
@@ -128,10 +137,8 @@ class Cart
      *
      * @param int $roundingDecimals
      */
-    public function setRoundingDecimals($roundingDecimals)
+    public function setRoundingDecimals(int $roundingDecimals)
     {
-        $roundingDecimals = (int) $roundingDecimals;
-
         if ($roundingDecimals < 0) {
             throw new \RangeException('Invalid value for rounding decimals.');
         }
@@ -148,7 +155,7 @@ class Cart
      *
      * @return int
      */
-    public function getRoundingDecimals()
+    public function getRoundingDecimals(): int
     {
         return $this->_roundingDecimals;
     }
@@ -156,7 +163,7 @@ class Cart
     /**
      * Set promotions.
      *
-     * @param array $promotions
+     * @param PromotionInterface[] $promotions
      */
     public function setPromotions(array $promotions)
     {
@@ -166,7 +173,7 @@ class Cart
     /**
      * Get promotions.
      *
-     * @return array
+     * @return PromotionInterface[]
      */
     public function getPromotions()
     {
@@ -178,7 +185,7 @@ class Cart
      *
      * @param array $sorting
      */
-    public function sortByType($sorting)
+    public function sortByType(array $sorting)
     {
         $sorting = array_flip($sorting);
 
@@ -191,25 +198,27 @@ class Cart
     }
 
     /**
-     * Check if cart is empty.
+     * Get items.
      *
-     * @return bool
+     * @param callable|null $filter
+     *
+     * @return CartItemInterface[]
      */
-    public function isEmpty()
+    public function getItems(callable $filter = null): array
     {
-        return !count($this->getItems());
+        return $filter ? array_filter($this->_items, $filter) : $this->_items;
     }
 
     /**
-     * Check if cart is empty by tyoe.
+     * Get items by type.
      *
      * @param string $type
      *
-     * @return bool
+     * @return CartItemInterface[]
      */
-    public function isEmptyByType($type)
+    public function getItemsByType(string $type): array
     {
-        return !count($this->getItemsByType($type));
+        return $this->getItems($this->_getTypeCondition($type));
     }
 
     /**
@@ -219,7 +228,7 @@ class Cart
      *
      * @return int
      */
-    public function countItems($filter = null)
+    public function countItems(callable $filter = null): int
     {
         return count($this->getItems($filter));
     }
@@ -231,47 +240,43 @@ class Cart
      *
      * @return int
      */
-    public function countItemsByType($type)
+    public function countItemsByType(string $type): int
     {
         return $this->countItems($this->_getTypeCondition($type));
     }
 
     /**
-     * Get items.
+     * Check if cart is empty.
      *
      * @param callable|null $filter
      *
-     * @return array
+     * @return bool
      */
-    public function getItems($filter = null)
+    public function isEmpty(callable $filter = null): bool
     {
-        if ($filter && !is_callable($filter)) {
-            throw new \InvalidArgumentException('Filter for getItems method has to be callable.');
-        }
-
-        return $filter ? array_filter($this->_items, $filter) : $this->_items;
+        return !$this->countItems($type);
     }
 
     /**
-     * Get items by type.
+     * Check if cart is empty by tyoe.
      *
      * @param string $type
      *
-     * @return array
+     * @return bool
      */
-    public function getItemsByType($type)
+    public function isEmptyByType(string $type): bool
     {
-        return $this->getItems($this->_getTypeCondition($type));
+        return !$this->countItemsByType($type);
     }
 
     /**
      * Check if cart has item with id.
      *
-     * @param mixed $cartId
+     * @param string $cartId
      *
      * @return bool
      */
-    public function hasItem($cartId)
+    public function hasItem(string $cartId): bool
     {
         return isset($this->_items[$cartId]);
     }
@@ -279,11 +284,11 @@ class Cart
     /**
      * Get item by cart id.
      *
-     * @param mixed $cartId
+     * @param string $cartId
      *
      * @return CartItemInterface
      */
-    public function getItem($cartId)
+    public function getItem(string $cartId): CartItemInterface
     {
         if (!$this->hasItem($cartId)) {
             throw new \OutOfBoundsException('Requested cart item does not exist.');
@@ -298,7 +303,7 @@ class Cart
      * @param CartItemInterface $item
      * @param int               $quantity
      */
-    public function addItem(CartItemInterface $item, $quantity = 1)
+    public function addItem(CartItemInterface $item, int $quantity = 1)
     {
         if ($this->hasItem($item->getCartId())) {
             $quantity += $this->getItem($item->getCartId())->getCartQuantity();
@@ -331,22 +336,14 @@ class Cart
     /**
      * Set cart items.
      *
-     * @param array|Traversable $items
+     * @param CartItemInterface[] $items
      */
-    public function setItems($items)
+    public function setItems(iterable $items)
     {
-        if (!is_array($items) && !$items instanceof \Traversable) {
-            throw new \InvalidArgumentException('Only an array or Traversable is allowed for setItems.');
-        }
-
         $this->_cartModifiedCallback = false;
         $this->clear();
 
         foreach ($items as $item) {
-            if (!$item instanceof CartItemInterface) {
-                throw new \InvalidArgumentException('All items have to implement CartItemInterface.');
-            }
-
             $this->addItem($item, $item->getCartQuantity());
         }
 
@@ -357,9 +354,9 @@ class Cart
     /**
      * Remove item by cart id.
      *
-     * @param mixed $cartId
+     * @param string $cartId
      */
-    public function removeItem($cartId)
+    public function removeItem(string $cartId)
     {
         if (!$this->hasItem($cartId)) {
             throw new \OutOfBoundsException('Requested cart item does not exist.');
@@ -391,16 +388,14 @@ class Cart
     /**
      * Set item quantity by cart id.
      *
-     * @param mixed $cartId
-     * @param int   $quantity
+     * @param string $cartId
+     * @param int    $quantity
      */
-    public function setItemQuantity($cartId, $quantity)
+    public function setItemQuantity(string $cartId, int $quantity)
     {
         if (!$this->hasItem($cartId)) {
             throw new \OutOfBoundsException('Requested cart item does not exist.');
         }
-
-        $quantity = (int) $quantity;
 
         if ($quantity <= 0) {
             return $this->removeItem($cartId);
@@ -436,7 +431,7 @@ class Cart
      *
      * @return Decimal
      */
-    public function getItemPrice(CartItemInterface $item, $quantity = null, $pricesWithVat = null, $roundingDecimals = null)
+    public function getItemPrice(CartItemInterface $item, int $quantity = null, bool $pricesWithVat = null, int $roundingDecimals = null): Decimal
     {
         $item->setCartContext($this->_context);
 
@@ -454,7 +449,7 @@ class Cart
      *
      * @return Decimal
      */
-    public function countPrice($unitPrice, $taxRate, $quantity = 1, $pricesWithVat = null, $roundingDecimals = null)
+    public function countPrice(float $unitPrice, float $taxRate, int $quantity = 1, bool $pricesWithVat = null, int $roundingDecimals = null): Decimal
     {
         if ($pricesWithVat === null) {
             $pricesWithVat = $this->_pricesWithVat;
@@ -464,13 +459,13 @@ class Cart
             $roundingDecimals = $this->_roundingDecimals;
         }
 
-        $price = Decimal::fromFloat((float) $unitPrice);
+        $price = Decimal::fromFloat($unitPrice);
 
         if ($pricesWithVat) {
-            $price = $price->mul(Decimal::fromFloat(1 + (float) $taxRate / 100));
+            $price = $price->mul(Decimal::fromFloat(1 + $taxRate / 100));
         }
 
-        return $price->round($roundingDecimals)->mul(Decimal::fromInteger((int) $quantity));
+        return $price->round($roundingDecimals)->mul(Decimal::fromInteger($quantity));
     }
 
     /**
@@ -492,7 +487,7 @@ class Cart
      *
      * @return array
      */
-    public function getTotals($filter = '~')
+    public function getTotals($filter = '~'): array
     {
         $store = false;
 
@@ -526,7 +521,7 @@ class Cart
      *
      * @return Decimal
      */
-    public function getSubtotal($type = '~')
+    public function getSubtotal($type = '~'): Decimal
     {
         $subtotal = Decimal::fromInteger(0);
 
@@ -544,7 +539,7 @@ class Cart
      *
      * @return Decimal
      */
-    public function getTotal($type = '~')
+    public function getTotal($type = '~'): Decimal
     {
         $total = Decimal::fromInteger(0);
 
@@ -560,9 +555,9 @@ class Cart
      *
      * @param callable|string $type
      *
-     * @return array
+     * @return Decimal[]
      */
-    public function getTaxes($type = '~')
+    public function getTaxes($type = '~'): array
     {
         return $this->getTotals($type)['taxes'];
     }
@@ -572,9 +567,9 @@ class Cart
      *
      * @param callable|string $type
      *
-     * @return array
+     * @return Decimal[]
      */
-    public function getTaxBases($type = '~')
+    public function getTaxBases($type = '~'): array
     {
         return $this->getTotals($type)['subtotals'];
     }
@@ -584,9 +579,9 @@ class Cart
      *
      * @param callable|string $type
      *
-     * @return array
+     * @return Decimal[]
      */
-    public function getTaxTotals($type = '~')
+    public function getTaxTotals($type = '~'): array
     {
         return $this->getTotals($type)['totals'];
     }
@@ -598,7 +593,7 @@ class Cart
      *
      * @return Decimal
      */
-    public function getWeight($type = '~')
+    public function getWeight($type = '~'): Decimal
     {
         return $this->getTotals($type)['weight'];
     }
@@ -610,7 +605,7 @@ class Cart
      *
      * @return array
      */
-    protected function _calculateTotals($filter)
+    protected function _calculateTotals($filter): array
     {
         if (!is_callable($filter)) {
             throw new \InvalidArgumentException('Filter for _calculateTotals method has to be callable.');
@@ -630,8 +625,8 @@ class Cart
 
             // weight
             if ($item instanceof WeightedCartItemInterface) {
-                $itemWeight = Decimal::fromFloat((float) $item->getWeight());
-                $itemWeight = $itemWeight->mul(Decimal::fromInteger((int) $item->getCartQuantity()));
+                $itemWeight = Decimal::fromFloat($item->getWeight());
+                $itemWeight = $itemWeight->mul(Decimal::fromInteger($item->getCartQuantity()));
                 $weight = $weight->add($itemWeight);
             }
         }
@@ -658,9 +653,9 @@ class Cart
      *
      * @param string $type
      *
-     * @return Closure
+     * @return callable
      */
-    protected function _getTypeCondition($type)
+    protected function _getTypeCondition(string $type): callable
     {
         $negative = false;
 
@@ -685,7 +680,7 @@ class Cart
             return;
         }
 
-        $this->_totals = null;
+        $this->_totals = [];
         $this->_cartModifiedCallback = false;
         $this->_processPromotions();
         $this->_cartModifiedCallback = true;
@@ -719,10 +714,10 @@ class Cart
     /**
      * Add binding.
      *
-     * @param mixed $boundCartId bound item id
-     * @param mixed $cartId      target item id
+     * @param string $boundCartId bound item id
+     * @param string $cartId      target item id
      */
-    protected function _addBinding($boundCartId, $cartId)
+    protected function _addBinding(string $boundCartId, string $cartId)
     {
         if (!$this->hasItem($cartId)) {
             throw new \OutOfBoundsException('Target cart item does not exist.');
@@ -738,10 +733,10 @@ class Cart
     /**
      * Remove binding.
      *
-     * @param mixed $boundCartId bound item id
-     * @param mixed $cartId      target item id
+     * @param string $boundCartId bound item id
+     * @param string $cartId      target item id
      */
-    protected function _removeBinding($boundCartId, $cartId)
+    protected function _removeBinding(string $boundCartId, string $cartId)
     {
         unset($this->_bindings[$cartId][$boundCartId]);
 

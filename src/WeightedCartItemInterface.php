@@ -1,4 +1,13 @@
 <?php
+/**
+ * This file is part of riesenia/cart package.
+ *
+ * Licensed under the MIT License
+ * (c) RIESENIA.com
+ */
+
+declare(strict_types=1);
+
 namespace Riesenia\Cart;
 
 /**
@@ -13,5 +22,5 @@ interface WeightedCartItemInterface extends CartItemInterface
      *
      * @return float
      */
-    public function getWeight();
+    public function getWeight(): float;
 }

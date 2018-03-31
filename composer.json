@@ -9,11 +9,12 @@
         }
     ],
     "require": {
-        "php": ">=7.0",
+        "php": ">=7.1",
         "litipk/php-bignumbers": "~0.8"
     },
     "require-dev": {
         "phpspec/phpspec": "~4.0",
+        "phpstan/phpstan": "~0.9",
         "rshop/php-cs-fixer-config": "~1.0"
     },
     "autoload": {

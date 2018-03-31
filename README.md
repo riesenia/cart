@@ -16,7 +16,7 @@ Or add to your *composer.json* file as a requirement:
 ```json
 {
     "require": {
-        "riesenia/cart": "~2.0"
+        "riesenia/cart": "~3.0"
     }
 }
 ```
