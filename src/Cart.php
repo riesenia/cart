@@ -14,60 +14,28 @@ use Litipk\BigNumbers\Decimal;
 
 class Cart
 {
-    /**
-     * Cart items.
-     *
-     * @var CartItemInterface[]
-     */
+    /** @var CartItemInterface[] */
     protected $_items = [];
 
-    /**
-     * Cart promotions.
-     *
-     * @var PromotionInterface[]
-     */
+    /** @var PromotionInterface[] */
     protected $_promotions = [];
 
-    /**
-     * Context data.
-     *
-     * @var array
-     */
+    /** @var array */
     protected $_context = [];
 
-    /**
-     * If prices are listed as gross.
-     *
-     * @var bool
-     */
+    /** @var bool */
     protected $_pricesWithVat;
 
-    /**
-     * Rounding decimals.
-     *
-     * @var int
-     */
+    /** @var int */
     protected $_roundingDecimals;
 
-    /**
-     * Totals.
-     *
-     * @var array
-     */
+    /** @var array */
     protected $_totals;
 
-    /**
-     * Bindings.
-     *
-     * @var array
-     */
+    /** @var array */
     protected $_bindings;
 
-    /**
-     * Active _cartModified callback.
-     *
-     * @var bool
-     */
+    /** @var bool */
     protected $_cartModifiedCallback = true;
 
     /**
@@ -101,7 +69,7 @@ class Cart
     /**
      * Get context.
      *
-     * @return array context data
+     * @return array
      */
     public function getContext(): array
     {
@@ -175,7 +143,7 @@ class Cart
      *
      * @return PromotionInterface[]
      */
-    public function getPromotions()
+    public function getPromotions(): array
     {
         return $this->_promotions;
     }
@@ -254,7 +222,7 @@ class Cart
      */
     public function isEmpty(callable $filter = null): bool
     {
-        return !$this->countItems($type);
+        return !$this->countItems($filter);
     }
 
     /**
@@ -301,9 +269,9 @@ class Cart
      * Add item to cart.
      *
      * @param CartItemInterface $item
-     * @param int               $quantity
+     * @param float             $quantity
      */
-    public function addItem(CartItemInterface $item, int $quantity = 1)
+    public function addItem(CartItemInterface $item, float $quantity = 1)
     {
         if ($this->hasItem($item->getCartId())) {
             $quantity += $this->getItem($item->getCartId())->getCartQuantity();
@@ -352,6 +320,42 @@ class Cart
     }
 
     /**
+     * Set item quantity by cart id.
+     *
+     * @param string $cartId
+     * @param float  $quantity
+     */
+    public function setItemQuantity(string $cartId, float $quantity)
+    {
+        if (!$this->hasItem($cartId)) {
+            throw new \OutOfBoundsException('Requested cart item does not exist.');
+        }
+
+        if ($quantity <= 0) {
+            return $this->removeItem($cartId);
+        }
+
+        $item = $this->getItem($cartId);
+
+        if ($item->getCartQuantity() != $quantity) {
+            $item->setCartQuantity($quantity);
+
+            // set bound item quantity
+            if (isset($this->_bindings[$cartId])) {
+                foreach ($this->_bindings[$cartId] as $boundCartId) {
+                    $item = $this->getItem($boundCartId);
+
+                    if ($item instanceof BoundCartItemInterface && $item->updateCartQuantityAutomatically()) {
+                        $item->setCartQuantity($quantity);
+                    }
+                }
+            }
+
+            $this->_cartModified();
+        }
+    }
+
+    /**
      * Remove item by cart id.
      *
      * @param string $cartId
@@ -386,52 +390,16 @@ class Cart
     }
 
     /**
-     * Set item quantity by cart id.
-     *
-     * @param string $cartId
-     * @param int    $quantity
-     */
-    public function setItemQuantity(string $cartId, int $quantity)
-    {
-        if (!$this->hasItem($cartId)) {
-            throw new \OutOfBoundsException('Requested cart item does not exist.');
-        }
-
-        if ($quantity <= 0) {
-            return $this->removeItem($cartId);
-        }
-
-        $item = $this->getItem($cartId);
-
-        if ($item->getCartQuantity() != $quantity) {
-            $item->setCartQuantity($quantity);
-
-            // set bound item quantity
-            if (isset($this->_bindings[$cartId])) {
-                foreach ($this->_bindings[$cartId] as $boundCartId) {
-                    $item = $this->getItem($boundCartId);
-
-                    if ($item instanceof BoundCartItemInterface && $item->updateCartQuantityAutomatically()) {
-                        $item->setCartQuantity($quantity);
-                    }
-                }
-            }
-
-            $this->_cartModified();
-        }
-    }
-
-    /**
      * Get item price (with or without VAT based on _pricesWithVat setting).
      *
      * @param CartItemInterface $item
-     * @param int|null          $quantity         null to use item quantity
+     * @param float|null        $quantity         null to use item quantity
      * @param bool|null         $pricesWithVat    null to use cart default
      * @param int|null          $roundingDecimals null to use cart default
      *
      * @return Decimal
      */
-    public function getItemPrice(CartItemInterface $item, int $quantity = null, bool $pricesWithVat = null, int $roundingDecimals = null): Decimal
+    public function getItemPrice(CartItemInterface $item, float $quantity = null, bool $pricesWithVat = null, int $roundingDecimals = null): Decimal
     {
         $item->setCartContext($this->_context);
 
@@ -443,13 +411,13 @@ class Cart
      *
      * @param float     $unitPrice        unit price without VAT
      * @param float     $taxRate
-     * @param int       $quantity
+     * @param float     $quantity
      * @param bool|null $pricesWithVat    null to use cart default
      * @param int|null  $roundingDecimals null to use cart default
      *
      * @return Decimal
      */
-    public function countPrice(float $unitPrice, float $taxRate, int $quantity = 1, bool $pricesWithVat = null, int $roundingDecimals = null): Decimal
+    public function countPrice(float $unitPrice, float $taxRate, float $quantity = 1, bool $pricesWithVat = null, int $roundingDecimals = null): Decimal
     {
         if ($pricesWithVat === null) {
             $pricesWithVat = $this->_pricesWithVat;
@@ -465,7 +433,7 @@ class Cart
             $price = $price->mul(Decimal::fromFloat(1 + $taxRate / 100));
         }
 
-        return $price->round($roundingDecimals)->mul(Decimal::fromInteger($quantity));
+        return $price->round($roundingDecimals)->mul(Decimal::fromFloat($quantity));
     }
 
     /**
@@ -626,7 +594,7 @@ class Cart
             // weight
             if ($item instanceof WeightedCartItemInterface) {
                 $itemWeight = Decimal::fromFloat($item->getWeight());
-                $itemWeight = $itemWeight->mul(Decimal::fromInteger($item->getCartQuantity()));
+                $itemWeight = $itemWeight->mul(Decimal::fromFloat($item->getCartQuantity()));
                 $weight = $weight->add($itemWeight);
             }
         }

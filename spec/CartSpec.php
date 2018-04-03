@@ -50,8 +50,8 @@ class CartSpec extends ObjectBehavior
     public function it_adds_items()
     {
         $this->countItems()->shouldReturn(2);
-        $this->getItem('A')->getCartQuantity()->shouldReturn(2);
-        $this->getItem('B')->getCartQuantity()->shouldReturn(1);
+        $this->getItem('A')->getCartQuantity()->shouldReturn(2.0);
+        $this->getItem('B')->getCartQuantity()->shouldReturn(1.0);
     }
 
     public function it_sets_items($item, $item2)
@@ -89,10 +89,10 @@ class CartSpec extends ObjectBehavior
         $item3->getCartType()->willReturn('product');
 
         $item->getCartQuantity()->shouldBeCalled();
-        $item3->setCartQuantity(4)->shouldBeCalled();
+        $item3->setCartQuantity(4.3)->shouldBeCalled();
         $item3->setCartContext([])->shouldBeCalled();
 
-        $this->addItem($item3, 2);
+        $this->addItem($item3, 2.3);
     }
 
     public function it_checks_empty_state_correctly()

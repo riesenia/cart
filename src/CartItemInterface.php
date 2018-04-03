@@ -48,16 +48,16 @@ interface CartItemInterface
     /**
      * Set cart quantity.
      *
-     * @param int $quantity
+     * @param float $quantity
      */
-    public function setCartQuantity(int $quantity);
+    public function setCartQuantity(float $quantity);
 
     /**
      * Get cart quantity.
      *
-     * @return int
+     * @return float
      */
-    public function getCartQuantity(): int;
+    public function getCartQuantity(): float;
 
     /**
      * Get unit price based on quantity and context.
