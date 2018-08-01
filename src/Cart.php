@@ -41,8 +41,8 @@ class Cart
     /**
      * Constructor.
      *
-     * @param array $context          data passed to cart items for custom price logic
-     * @param bool  $pricesWithVat    true if prices are listed as gross
+     * @param array $context
+     * @param bool  $pricesWithVat
      * @param int   $roundingDecimals
      */
     public function __construct(array $context = [], bool $pricesWithVat = true, int $roundingDecimals = 2)
@@ -53,9 +53,9 @@ class Cart
     }
 
     /**
-     * Set context.
+     * Set context. Context is passed to cart items (i.e. for custom price logic).
      *
-     * @param array $context data passed to cart items for custom price logic
+     * @param array $context
      */
     public function setContext(array $context)
     {
@@ -79,7 +79,7 @@ class Cart
     /**
      * Set prices with VAT.
      *
-     * @param bool $pricesWithVat true if prices are listed as gross
+     * @param bool $pricesWithVat
      */
     public function setPricesWithVat(bool $pricesWithVat)
     {
@@ -93,7 +93,7 @@ class Cart
     /**
      * Get prices with VAT.
      *
-     * @return bool true if prices are listed as gross
+     * @return bool
      */
     public function getPricesWithVat(): bool
     {
@@ -158,8 +158,8 @@ class Cart
         $sorting = array_flip($sorting);
 
         uasort($this->_items, function (CartItemInterface $a, CartItemInterface $b) use ($sorting) {
-            $aSort = isset($sorting[$a->getCartType()]) ? $sorting[$a->getCartType()] : 1000;
-            $bSort = isset($sorting[$b->getCartType()]) ? $sorting[$b->getCartType()] : 1000;
+            $aSort = $sorting[$a->getCartType()] ?? 1000;
+            $bSort = $sorting[$b->getCartType()] ?? 1000;
 
             return $aSort <=> $bSort;
         });
@@ -409,7 +409,7 @@ class Cart
     /**
      * Count price.
      *
-     * @param float     $unitPrice        unit price without VAT
+     * @param float     $unitPrice
      * @param float     $taxRate
      * @param float     $quantity
      * @param bool|null $pricesWithVat    null to use cart default

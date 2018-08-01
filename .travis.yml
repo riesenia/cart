@@ -14,3 +14,4 @@ before_script:
 script:
   - vendor/bin/phpspec run --config=phpspec.yml --no-interaction
   - vendor/bin/php-cs-fixer fix --config=.php_cs.dist --verbose --diff --dry-run
+  - vendor/bin/phpstan analyse --level max src
