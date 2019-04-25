@@ -85,6 +85,11 @@ class Cart
         $this->_context = $context;
 
         if ($this->_items) {
+            // reset context on items
+            foreach ($this->_items as $item) {
+                $item->setCartContext($context);
+            }
+
             $this->_cartModified();
         }
     }
