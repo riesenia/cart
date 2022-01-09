@@ -18,32 +18,22 @@ namespace Riesenia\Cart;
 interface PromotionInterface
 {
     /**
-     * Is this promotion eligible.
-     *
-     * @param Cart $cart
-     *
-     * @return bool
+     * If this promotion is eligible.
      */
     public function isEligible(Cart $cart): bool;
 
     /**
-     * Before apply callback.
-     *
-     * @param Cart $cart
+     * Before apply callback. Called before any promotion is applied.
      */
-    public function beforeApply(Cart $cart);
+    public function beforeApply(Cart $cart): void;
 
     /**
-     * After apply callback.
-     *
-     * @param Cart $cart
+     * After apply callback. Called after all promotions have been applied.
      */
-    public function afterApply(Cart $cart);
+    public function afterApply(Cart $cart): void;
 
     /**
-     * Apply promotion.
-     *
-     * @param Cart $cart
+     * Apply promotion. Called only if promotion is eligible.
      */
-    public function apply(Cart $cart);
+    public function apply(Cart $cart): void;
 }

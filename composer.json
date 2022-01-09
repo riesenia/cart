@@ -13,9 +13,10 @@
         "litipk/php-bignumbers": "~0.8"
     },
     "require-dev": {
-        "phpspec/phpspec": "~4.0",
-        "phpstan/phpstan": "~0.10.0",
-        "rshop/php-cs-fixer-config": "~1.0"
+        "friendsofphp/php-cs-fixer": "~2.0",
+        "phpspec/phpspec": "~5.0 || ~6.0 || ~7.0",
+        "phpstan/phpstan": "~0.12",
+        "rshop/php-cs-fixer-config": "~2.0"
     },
     "autoload": {
         "psr-4": {

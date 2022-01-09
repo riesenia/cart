@@ -16,7 +16,7 @@ Or add to your *composer.json* file as a requirement:
 ```json
 {
     "require": {
-        "riesenia/cart": "~3.0"
+        "riesenia/cart": "~4.0"
     }
 }
 ```
@@ -36,7 +36,7 @@ All of them can be set separately.
 ```php
 use Riesenia\Cart\Cart;
 
-// default is (null, true, 2)
+// default is ([], true, 2)
 $cart = new Cart();
 
 $cart->setContext(['customer_id' => $_SESSION['customer_id']]);
@@ -68,7 +68,7 @@ Cart can be cleared using *clear()* method. Items can be set using *setItems()* 
 
 ### Getting items
 
-Items can be fetched using *getItems* (accepts *callable* to filter results) or by type using *getItemsByType*.
+Items can be fetched using *getItems*. It accepts *callable* or string (see examples for `getTotal`) to filter results.
 
 ## Counting totals
 
@@ -91,7 +91,7 @@ echo $cart->getTaxes()[20];
 echo $cart->getTotal();
 ```
 
-Totals can be also count by type:
+Totals can be also counted by type:
 
 ```php
 // get totals of type 'product'

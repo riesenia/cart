@@ -7,6 +7,8 @@ Licensed under the MIT License
 $config = new Rshop\CS\Config\Rshop($header);
 
 $config->setStrict()
+    ->setRule('native_function_invocation', true)
+    ->setRule('phpdoc_add_missing_param_annotation', ['only_untyped' => true])
     ->getFinder()
     ->in(__DIR__)
     ->exclude('vendor');

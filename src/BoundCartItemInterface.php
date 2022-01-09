@@ -19,15 +19,11 @@ interface BoundCartItemInterface extends CartItemInterface
 {
     /**
      * Get bound item cart id.
-     *
-     * @return string
      */
     public function getBoundItemCartId(): string;
 
     /**
      * Update quantity automatically.
-     *
-     * @return bool
      */
     public function updateCartQuantityAutomatically(): bool;
 }

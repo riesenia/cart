@@ -30,7 +30,7 @@ class CartSpec extends ObjectBehavior
         $item->getTaxRate()->willReturn(10);
 
         $item->setCartQuantity(2)->shouldBeCalled();
-        $item->setCartContext([])->shouldBeCalled();
+        $item->setCartContext($this->getContext())->shouldBeCalled();
 
         $this->addItem($item, 2);
 
@@ -42,7 +42,7 @@ class CartSpec extends ObjectBehavior
         $item2->getTaxRate()->willReturn(20);
 
         $item2->setCartQuantity(1)->shouldBeCalled();
-        $item2->setCartContext([])->shouldBeCalled();
+        $item2->setCartContext($this->getContext())->shouldBeCalled();
 
         $this->addItem($item2);
     }
@@ -89,8 +89,7 @@ class CartSpec extends ObjectBehavior
         $item3->getCartType()->willReturn('product');
 
         $item->getCartQuantity()->shouldBeCalled();
-        $item3->setCartQuantity(4.3)->shouldBeCalled();
-        $item3->setCartContext([])->shouldBeCalled();
+        $item->setCartQuantity(4.3)->shouldBeCalled();
 
         $this->addItem($item3, 2.3);
     }
@@ -104,7 +103,7 @@ class CartSpec extends ObjectBehavior
         $this->isEmpty()->shouldReturn(true);
     }
 
-    public function it_gets_items_by_type($item, $item2, CartItemInterface $item3, WeightedCartItemInterface $item4)
+    public function it_gets_items_by_filter($item, $item2, CartItemInterface $item3, WeightedCartItemInterface $item4)
     {
         // stub
         $item3->getCartId()->willReturn('T');
@@ -114,18 +113,24 @@ class CartSpec extends ObjectBehavior
         $item3->getTaxRate()->willReturn(0);
 
         $item3->setCartQuantity(1)->shouldBeCalled();
-        $item3->setCartContext([])->shouldBeCalled();
+        $item3->setCartContext($this->getContext())->shouldBeCalled();
 
         $this->addItem($item3);
 
-        $this->getItemsByType('test')->shouldReturn(['T' => $item3]);
-        $this->getItemsByType('product')->shouldReturn(['A' => $item, 'B' => $item2]);
-        $this->getItemsByType('~test')->shouldReturn(['A' => $item, 'B' => $item2]);
+        $this->getItems('test')->shouldReturn(['T' => $item3]);
+        $this->getItems('product')->shouldReturn(['A' => $item, 'B' => $item2]);
+        $this->getItems('~test')->shouldReturn(['A' => $item, 'B' => $item2]);
+        $this->getItems(function (CartItemInterface $item) {
+            return $item->getCartId() == 'A';
+        })->shouldReturn(['A' => $item]);
 
         $this->getTotal('product')->equals(Decimal::fromFloat(3.19))->shouldReturn(true);
         $this->getTotal('test')->equals(Decimal::fromInteger(1))->shouldReturn(true);
         $this->getTotal('product,nonexistent,test')->equals(Decimal::fromFloat(4.19))->shouldReturn(true);
         $this->getTotal('~test')->equals(Decimal::fromFloat(3.19))->shouldReturn(true);
+        $this->getTotal(function (CartItemInterface $item) {
+            return $item->getCartId() == 'A';
+        })->equals(Decimal::fromFloat(2.2))->shouldReturn(true);
 
         // stub
         $item4->getCartId()->willReturn('W');
@@ -136,7 +141,7 @@ class CartSpec extends ObjectBehavior
         $item4->getWeight()->willReturn(0.5);
 
         $item4->setCartQuantity(3)->shouldBeCalled();
-        $item4->setCartContext([])->shouldBeCalled();
+        $item4->setCartContext($this->getContext())->shouldBeCalled();
 
         $this->addItem($item4, 3);
 
@@ -216,7 +221,7 @@ class CartSpec extends ObjectBehavior
         $item3->updateCartQuantityAutomatically()->willReturn(false);
 
         $item3->setCartQuantity(1)->shouldBeCalled();
-        $item3->setCartContext([])->shouldBeCalled();
+        $item3->setCartContext($this->getContext())->shouldBeCalled();
 
         $this->addItem($item3);
 
@@ -230,7 +235,7 @@ class CartSpec extends ObjectBehavior
         $item4->updateCartQuantityAutomatically()->willReturn(false);
 
         $item4->setCartQuantity(1)->shouldBeCalled();
-        $item4->setCartContext([])->shouldBeCalled();
+        $item4->setCartContext($this->getContext())->shouldBeCalled();
 
         $this->addItem($item4);
 
@@ -252,7 +257,7 @@ class CartSpec extends ObjectBehavior
         $item3->updateCartQuantityAutomatically()->willReturn(true);
 
         $item3->setCartQuantity(2)->shouldBeCalled();
-        $item3->setCartContext([])->shouldBeCalled();
+        $item3->setCartContext($this->getContext())->shouldBeCalled();
 
         $this->addItem($item3);
 
@@ -266,7 +271,7 @@ class CartSpec extends ObjectBehavior
         $item4->updateCartQuantityAutomatically()->willReturn(false);
 
         $item4->setCartQuantity(1)->shouldBeCalled();
-        $item4->setCartContext([])->shouldBeCalled();
+        $item4->setCartContext($this->getContext())->shouldBeCalled();
 
         $this->addItem($item4);
 
@@ -287,7 +292,7 @@ class CartSpec extends ObjectBehavior
         $item3->getBoundItemCartIds()->willReturn(['A', 'B']);
 
         $item3->setCartQuantity(1)->shouldBeCalled();
-        $item3->setCartContext([])->shouldBeCalled();
+        $item3->setCartContext($this->getContext())->shouldBeCalled();
 
         $this->addItem($item3);
 
@@ -310,7 +315,7 @@ class CartSpec extends ObjectBehavior
         $item3->getTaxRate()->willReturn(0);
 
         $item3->setCartQuantity(1)->shouldBeCalled();
-        $item3->setCartContext([])->shouldBeCalled();
+        $item3->setCartContext($this->getContext())->shouldBeCalled();
 
         $this->addItem($item3);
 
@@ -322,7 +327,7 @@ class CartSpec extends ObjectBehavior
         $item4->getTaxRate()->willReturn(0);
 
         $item4->setCartQuantity(3)->shouldBeCalled();
-        $item4->setCartContext([])->shouldBeCalled();
+        $item4->setCartContext($this->getContext())->shouldBeCalled();
 
         $this->addItem($item4, 3);
 

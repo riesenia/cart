@@ -19,8 +19,6 @@ interface WeightedCartItemInterface extends CartItemInterface
 {
     /**
      * Get unit weight.
-     *
-     * @return float
      */
     public function getWeight(): float;
 }
