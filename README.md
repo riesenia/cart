@@ -1,6 +1,6 @@
 # PHP Cart
 
-[![Build Status](https://img.shields.io/travis/riesenia/cart/master.svg?style=flat-square)](https://travis-ci.org/riesenia/cart)
+[![Build Status](https://github.com/riesenia/cart/workflows/Test/badge.svg)](https://github.com/riesenia/cart/actions)
 [![Latest Version](https://img.shields.io/packagist/v/riesenia/cart.svg?style=flat-square)](https://packagist.org/packages/riesenia/cart)
 [![Total Downloads](https://img.shields.io/packagist/dt/riesenia/cart.svg?style=flat-square)](https://packagist.org/packages/riesenia/cart)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
