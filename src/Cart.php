@@ -185,6 +185,24 @@ class Cart
     }
 
     /**
+     * Set total rounding function.
+     *
+     * @param callable|null $rounding
+     */
+    public function setTotalRounding(?callable $rounding): void
+    {
+        $this->totalRounding = $rounding;
+    }
+
+    /**
+     * Get total rounding function.
+     */
+    public function getTotalRounding(): ?callable
+    {
+        return $this->totalRounding;
+    }
+
+    /**
      * Set sorting by type.
      *
      * @param array $sorting
