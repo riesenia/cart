@@ -579,7 +579,7 @@ class Cart
     {
         $this->getTotal($type);
 
-        return $this->roundingAmount;
+        return $this->roundingAmount ?? Decimal::fromInteger(0);
     }
 
     /**
