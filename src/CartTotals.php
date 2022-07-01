@@ -70,7 +70,7 @@ class CartTotals
 
         $this->rounding = Decimal::fromInteger(0);
 
-        if ($cart->getTotalRounding()) {
+        if (\is_callable($cart->getTotalRounding())) {
             $total = $this->getTotal();
             $newTotal = $cart->getTotalRounding()($total);
 
