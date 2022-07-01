@@ -61,6 +61,12 @@ class Cart
      */
     protected $_cartModifiedCallback = true;
 
+    /** @var callable|null */
+    protected $totalRounding;
+
+    /** @var Decimal */
+    protected $roundingAmount;
+
     /**
      * Constructor.
      *
@@ -557,7 +563,23 @@ class Cart
             $total = $total->add($item);
         }
 
+        if (\is_callable($this->totalRounding)) {
+            $newTotal = \call_user_func($this->totalRounding, $total);
+            $this->roundingAmount = $newTotal->sub($total);
+            $total = $newTotal;
+        }
+
         return $total;
+    }
+
+    /**
+     * @param callable|string $type
+     */
+    public function getRoundingAmount($type = '~'): Decimal
+    {
+        $this->getTotal($type);
+
+        return $this->roundingAmount;
     }
 
     /**
