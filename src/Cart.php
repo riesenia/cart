@@ -33,7 +33,7 @@ class Cart
     protected $totals = [];
 
     /** @var callable|null */
-    protected $totalRounding = null;
+    protected $totalRounding;
 
     /** @var array<string,array<string,string>> */
     protected $_bindings;
