@@ -366,7 +366,7 @@ class Cart
     /**
      * Set total rounding function.
      */
-    public function setTotalRounding(callable $rounding): void
+    public function setTotalRounding(?callable $rounding): void
     {
         $this->totalRounding = $rounding;
     }
