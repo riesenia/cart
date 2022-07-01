@@ -19,9 +19,6 @@ use Litipk\BigNumbers\Decimal;
  */
 class CartTotals
 {
-    /** @var Decimal */
-    private $weight;
-
     /** @var array<float|int,Decimal> */
     private $subtotals = [];
 
@@ -30,6 +27,12 @@ class CartTotals
 
     /** @var array<float|int,Decimal> */
     private $taxes = [];
+
+    /** @var Decimal */
+    private $weight;
+
+    /** @var Decimal */
+    private $rounding;
 
     public function __construct(Cart $cart, callable $filter)
     {
@@ -64,6 +67,15 @@ class CartTotals
                 $this->totals[$taxRate] = $amount->add($this->taxes[$taxRate]);
             }
         }
+
+        $this->rounding = Decimal::fromInteger(0);
+
+        if ($cart->getTotalRounding()) {
+            $total = $this->getTotal();
+            $newTotal = $cart->getTotalRounding()($total);
+
+            $this->rounding = $newTotal->sub($total);
+        }
     }
 
     public function getSubtotal(): Decimal
@@ -85,7 +97,12 @@ class CartTotals
             $total = $total->add($item);
         }
 
-        return $total;
+        return $total->add($this->rounding);
+    }
+
+    public function getRounding(): Decimal
+    {
+        return $this->rounding;
     }
 
     public function getWeight(): Decimal

@@ -32,6 +32,9 @@ class Cart
     /** @var CartTotals[] */
     protected $totals = [];
 
+    /** @var callable|null */
+    protected $totalRounding = null;
+
     /** @var array<string,array<string,string>> */
     protected $_bindings;
 
@@ -319,13 +322,6 @@ class Cart
 
     /**
      * Get item price (with or without VAT based on pricesWithVat setting).
-     *
-     * @param CartItemInterface $item
-     * @param float|null        $quantity         null to use item quantity
-     * @param bool|null         $pricesWithVat    null to use cart default
-     * @param int|null          $roundingDecimals null to use cart default
-     *
-     * @return Decimal
      */
     public function getItemPrice(CartItemInterface $item, float $quantity = null, bool $pricesWithVat = null, int $roundingDecimals = null): Decimal
     {
@@ -336,14 +332,6 @@ class Cart
 
     /**
      * Count price.
-     *
-     * @param float     $unitPrice
-     * @param float     $taxRate
-     * @param float     $quantity
-     * @param bool|null $pricesWithVat    null to use cart default
-     * @param int|null  $roundingDecimals null to use cart default
-     *
-     * @return Decimal
      */
     public function countPrice(float $unitPrice, float $taxRate, float $quantity = 1, bool $pricesWithVat = null, int $roundingDecimals = null): Decimal
     {
@@ -373,6 +361,22 @@ class Cart
             $this->items = [];
             $this->_cartModified();
         }
+    }
+
+    /**
+     * Set total rounding function.
+     */
+    public function setTotalRounding(callable $rounding): void
+    {
+        $this->totalRounding = $rounding;
+    }
+
+    /**
+     * Get total rounding function.
+     */
+    public function getTotalRounding(): ?callable
+    {
+        return $this->totalRounding;
     }
 
     /**
@@ -413,6 +417,14 @@ class Cart
     public function getTotal($filter = '~'): Decimal
     {
         return $this->getTotals($filter)->getTotal();
+    }
+
+    /**
+     * @param callable|string $filter
+     */
+    public function getRoundingAmount($filter = '~'): Decimal
+    {
+        return $this->getTotals($filter)->getRounding();
     }
 
     /**

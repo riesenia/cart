@@ -125,6 +125,10 @@ Item implementing *WeightedCartItemInterface* can be added to cart, so cart can 
 echo $cart->getWeight('product');
 ```
 
+## Total rounding
+
+Rounding function can be set using *setTotalRounding* method. This affects only total sum of the cart. Rounding amount can be accessed using *getRoundingAmount* method.
+
 ## Bound cart items
 
 Item implementing *BoundCartItemInterface* can be added to cart. When the target item is removed from the cart, bound item is removed automatically too. If *updateCartQuantityAutomatically* method returns true, bound item also reflects quantity changes of target item.

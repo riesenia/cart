@@ -56,12 +56,10 @@ class CartSpec extends ObjectBehavior
 
     public function it_sets_items($item, $item2)
     {
-        $items = [$item, $item2];
-
         $item->getCartQuantity()->willReturn(3);
         $item->setCartQuantity(3)->shouldBeCalled();
 
-        $this->setItems($items);
+        $this->setItems([$item, $item2]);
 
         $this->getTotal()->equals(Decimal::fromFloat(4.29))->shouldReturn(true);
     }
@@ -120,17 +118,13 @@ class CartSpec extends ObjectBehavior
         $this->getItems('test')->shouldReturn(['T' => $item3]);
         $this->getItems('product')->shouldReturn(['A' => $item, 'B' => $item2]);
         $this->getItems('~test')->shouldReturn(['A' => $item, 'B' => $item2]);
-        $this->getItems(function (CartItemInterface $item) {
-            return $item->getCartId() == 'A';
-        })->shouldReturn(['A' => $item]);
+        $this->getItems(fn (CartItemInterface $item) => $item->getCartId() == 'A')->shouldReturn(['A' => $item]);
 
         $this->getTotal('product')->equals(Decimal::fromFloat(3.19))->shouldReturn(true);
         $this->getTotal('test')->equals(Decimal::fromInteger(1))->shouldReturn(true);
         $this->getTotal('product,nonexistent,test')->equals(Decimal::fromFloat(4.19))->shouldReturn(true);
         $this->getTotal('~test')->equals(Decimal::fromFloat(3.19))->shouldReturn(true);
-        $this->getTotal(function (CartItemInterface $item) {
-            return $item->getCartId() == 'A';
-        })->equals(Decimal::fromFloat(2.2))->shouldReturn(true);
+        $this->getTotal(fn (CartItemInterface $item) => $item->getCartId() == 'A')->equals(Decimal::fromFloat(2.2))->shouldReturn(true);
 
         // stub
         $item4->getCartId()->willReturn('W');
@@ -336,5 +330,13 @@ class CartSpec extends ObjectBehavior
         $this->sortByType(['first', 'product', 'last']);
 
         $this->getItems()->shouldReturn(['F' => $item4, 'A' => $item, 'B' => $item2, 'L' => $item3]);
+    }
+
+    public function it_can_set_rounding()
+    {
+        $this->setTotalRounding(fn (Decimal $total) => $total->round());
+
+        $this->getTotal()->equals(Decimal::fromFloat(3.0))->shouldReturn(true);
+        $this->getRoundingAmount()->equals(Decimal::fromFloat(-0.19))->shouldReturn(true);
     }
 }
