@@ -386,7 +386,7 @@ class Cart
      */
     public function getTotals($filter = '~'): CartTotals
     {
-        $hash = \is_string($filter) ? $filter : \spl_object_hash((object) $filter);
+        $hash = \is_string($filter) ? $filter : $this->_hashFilter($filter);
 
         if (isset($this->totals[$hash])) {
             return $this->totals[$hash];
@@ -463,6 +463,38 @@ class Cart
     public function getWeight($filter = '~'): Decimal
     {
         return $this->getTotals($filter)->getWeight();
+    }
+
+    /**
+     * Build content-based cache key for a callable filter, so structurally identical
+     * closures (same source location, bound object and captured variables) collide
+     * intentionally, instead of relying on spl_object_hash's reused memory addresses.
+     *
+     * @param callable $filter
+     */
+    protected function _hashFilter($filter): string
+    {
+        if (!$filter instanceof \Closure) {
+            return \spl_object_hash((object) $filter);
+        }
+
+        $reflection = new \ReflectionFunction($filter);
+
+        $parts = [
+            $reflection->getFileName() ?: '',
+            (string) $reflection->getStartLine(),
+        ];
+
+        $boundThis = $reflection->getClosureThis();
+        $parts[] = $boundThis === null ? '' : \spl_object_hash($boundThis);
+
+        foreach ($reflection->getStaticVariables() as $name => $value) {
+            // objects captured via `use` are assumed to be long-lived (e.g. entities),
+            // not disposable closures, so hashing their identity is safe here
+            $parts[] = $name . '=' . (\is_object($value) ? \spl_object_hash($value) : \md5(\serialize($value)));
+        }
+
+        return \md5(\implode('|', $parts));
     }
 
     /**
