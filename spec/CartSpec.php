@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace spec\Riesenia\Cart;
 
 use Litipk\BigNumbers\Decimal;
+use PhpSpec\Exception\Example\FailureException;
 use PhpSpec\ObjectBehavior;
 use Riesenia\Cart\BoundCartItemInterface;
 use Riesenia\Cart\CartItemInterface;
@@ -147,6 +148,52 @@ class CartSpec extends ObjectBehavior
         $this->getWeight('weighted')->equals(Decimal::fromFloat(1.5))->shouldReturn(true);
         $this->getWeight('weighted,nonexistent,test')->equals(Decimal::fromFloat(1.5))->shouldReturn(true);
         $this->getWeight('product,nonexistent,test')->isZero()->shouldReturn(true);
+    }
+
+    public function it_accepts_a_filter_capturing_non_serializable_values()
+    {
+        $helpers = ['id' => function (CartItemInterface $item) { return $item->getCartId(); }];
+
+        $this->getTotal(function (CartItemInterface $item) use ($helpers) {
+            return $helpers['id']($item) == 'A';
+        })->equals(Decimal::fromFloat(2.2))->shouldReturn(true);
+    }
+
+    public function it_does_not_mix_up_totals_of_short_lived_filters()
+    {
+        // filter is released right after the call, so its object id is free for the next filter (RAJ-2625)
+        $totalOf = function (string $id) {
+            return $this->getWrappedObject()->getTotal(function (CartItemInterface $item) use ($id) {
+                return $item->getCartId() == $id;
+            });
+        };
+
+        for ($i = 0; $i < 10; ++$i) {
+            // result kept and dropped immediately - both allocation orders must be covered
+            $kept = [$totalOf('X'), $totalOf('A'), $totalOf('B')];
+            $dropped = [(string) $totalOf('X'), (string) $totalOf('A'), (string) $totalOf('B')];
+
+            $this->_assertTotals($kept);
+            $this->_assertTotals(\array_map(function ($total) { return Decimal::fromString($total); }, $dropped));
+        }
+    }
+
+    public function it_does_not_mix_up_totals_of_filters_wrapping_short_lived_filters()
+    {
+        // promotion-like filter wrapping its own condition, both closures released after the call (RAJ-2625)
+        $totalOf = function (string $id) {
+            $condition = function (CartItemInterface $item) use ($id) {
+                return $item->getCartId() == $id;
+            };
+
+            return (string) $this->getWrappedObject()->getTotal(function (CartItemInterface $item) use ($condition) {
+                return $condition($item) && $item->getCartType() != 'shipping';
+            });
+        };
+
+        for ($i = 0; $i < 10; ++$i) {
+            $this->_assertTotals(\array_map(function ($total) { return Decimal::fromString($total); }, [$totalOf('X'), $totalOf('A'), $totalOf('B')]));
+        }
     }
 
     public function it_counts_totals_for_gross_prices_correctly()
@@ -344,5 +391,19 @@ class CartSpec extends ObjectBehavior
 
         $this->getTotal()->equals(Decimal::fromFloat(3.0))->shouldReturn(true);
         $this->getRoundingAmount()->equals(Decimal::fromFloat(-0.19))->shouldReturn(true);
+    }
+
+    /**
+     * Assert totals of filters for items X (nonexistent), A and B.
+     *
+     * @param Decimal[] $totals
+     */
+    protected function _assertTotals(array $totals): void
+    {
+        foreach ([0, 2.2, 0.99] as $key => $expected) {
+            if (!$totals[$key]->equals(Decimal::fromFloat($expected))) {
+                throw new FailureException(\sprintf('Expected total %s, got %s (filter #%d).', $expected, $totals[$key], $key));
+            }
+        }
     }
 }

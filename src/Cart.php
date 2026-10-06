@@ -32,6 +32,9 @@ class Cart
     /** @var CartTotals[] */
     protected $totals = [];
 
+    /** @var callable[] */
+    protected $filters = [];
+
     /** @var callable|null */
     protected $totalRounding;
 
@@ -386,7 +389,15 @@ class Cart
      */
     public function getTotals($filter = '~'): CartTotals
     {
-        $hash = \is_string($filter) ? $filter : $this->_hashFilter($filter);
+        if (\is_string($filter)) {
+            $hash = $filter;
+        } else {
+            if (!\is_callable($filter)) {
+                throw new \InvalidArgumentException('Filter for getTotals method has to be callable.');
+            }
+
+            $hash = $this->_hashFilter($filter);
+        }
 
         if (isset($this->totals[$hash])) {
             return $this->totals[$hash];
@@ -396,9 +407,9 @@ class Cart
             $filter = $this->buildTypeCondition($filter);
         }
 
-        if (!\is_callable($filter)) {
-            throw new \InvalidArgumentException('Filter for getTotals method has to be callable.');
-        }
+        // keep the filter alive as long as its cached totals, so that its object
+        // id can not be reused by another callable while the entry is cached
+        $this->filters[$hash] = $filter;
 
         return $this->totals[$hash] = new CartTotals($this, $filter);
     }
@@ -466,35 +477,25 @@ class Cart
     }
 
     /**
-     * Build content-based cache key for a callable filter, so structurally identical
-     * closures (same source location, bound object and captured variables) collide
-     * intentionally, instead of relying on spl_object_hash's reused memory addresses.
+     * Build cache key for a callable filter. Identity of the callable is used, which
+     * is safe because getTotals keeps the callable referenced for as long as its
+     * cached totals live (see $filters), so its object id can not be reused.
      *
      * @param callable $filter
      */
     protected function _hashFilter($filter): string
     {
-        if (!$filter instanceof \Closure) {
-            return \spl_object_hash((object) $filter);
+        // closure or invokable object
+        if (\is_object($filter)) {
+            return \spl_object_hash($filter);
         }
 
-        $reflection = new \ReflectionFunction($filter);
-
-        $parts = [
-            $reflection->getFileName() ?: '',
-            (string) $reflection->getStartLine(),
-        ];
-
-        $boundThis = $reflection->getClosureThis();
-        $parts[] = $boundThis === null ? '' : \spl_object_hash($boundThis);
-
-        foreach ($reflection->getStaticVariables() as $name => $value) {
-            // objects captured via `use` are assumed to be long-lived (e.g. entities),
-            // not disposable closures, so hashing their identity is safe here
-            $parts[] = $name . '=' . (\is_object($value) ? \spl_object_hash($value) : \md5(\serialize($value)));
+        // [$object, 'method'] or ['Class', 'method']
+        if (\is_array($filter)) {
+            return (\is_object($filter[0]) ? \spl_object_hash($filter[0]) : (string) $filter[0]) . '::' . $filter[1];
         }
 
-        return \md5(\implode('|', $parts));
+        return (string) $filter;
     }
 
     /**
@@ -528,6 +529,7 @@ class Cart
         }
 
         $this->totals = [];
+        $this->filters = [];
         $this->_cartModifiedCallback = false;
         $this->_processPromotions();
         $this->_cartModifiedCallback = true;
