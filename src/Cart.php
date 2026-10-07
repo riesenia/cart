@@ -495,7 +495,12 @@ class Cart
             return (\is_object($filter[0]) ? \spl_object_hash($filter[0]) : (string) $filter[0]) . '::' . $filter[1];
         }
 
-        return (string) $filter;
+        // 'function' or 'Class::method'
+        if (\is_string($filter)) {
+            return $filter;
+        }
+
+        throw new \InvalidArgumentException('Filter for getTotals method has to be callable.');
     }
 
     /**
